@@ -1,5 +1,6 @@
 import { testConnection } from './src/models/db.js';
 import { getAllOrganizations } from './src/models/organizations.js'; // Importación agregada
+import { getAllCategories } from './src/models/categories.js';
 import express from 'express';
 import { fileURLToPath } from 'url';
 import path from 'path';
@@ -55,7 +56,14 @@ app.get('/projects', async (req, res) => {
 });
 
 app.get('/categories', async (req, res) => {
-    res.render('categories', { title: 'Project Categories' });
+    // 1. Obtenemos las categorías de la BD
+    const categories = await getAllCategories();
+    
+    // 2. Definimos el título
+    const title = 'Project Categories';
+
+    // 3. Pasamos las categorías a la vista EJS
+    res.render('categories', { title, categories });
 });
 
 /**

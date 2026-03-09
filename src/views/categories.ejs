@@ -3,11 +3,13 @@
 <main>
     <h1><%= title %></h1>
     <section class="category-grid">
+        <p>Browse our projects by category:</p>
         <ul>
-            <li>Environmental</li>
-            <li>Educational</li>
-            <li>Community Service</li>
-            <li>Health and Wellness</li>
+            <% categories.forEach(category => { %>
+                <li>
+                    <strong><%= category.category_name %></strong>
+                </li>
+            <% }); %>
         </ul>
     </section>
 </main>
