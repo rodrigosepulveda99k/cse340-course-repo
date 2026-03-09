@@ -1,12 +1,14 @@
+import { testConnection } from './src/models/db.js';
+import { getAllOrganizations } from './src/models/organizations.js'; // Importación agregada
 import express from 'express';
 import { fileURLToPath } from 'url';
 import path from 'path';
 
 // Define the application environment
-const nodeEnv = process.env.NODE_ENV?.toLowerCase() || 'production'; // Changed to camelCase
+const nodeEnv = process.env.NODE_ENV?.toLowerCase() || 'production';
 
 // Define the port number the server will listen on
-const port = process.env.PORT || 3000; // Changed to camelCase
+const port = process.env.PORT || 3000;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -35,9 +37,16 @@ app.get('/', async (req, res) => {
     res.render('home', { title });
 });
 
+// ROUTE UPDATED: Now fetches organizations from the database
 app.get('/organizations', async (req, res) => {
+    // 1. Fetch the data from the PostgreSQL table
+    const organizations = await getAllOrganizations();
+    
+    // 2. Set the page title
     const title = 'Our Partner Organizations';
-    res.render('organizations', { title });
+
+    // 3. Render the view, passing both the title and the organizations array
+    res.render('organizations', { title, organizations });
 });
 
 app.get('/projects', async (req, res) => {
@@ -45,13 +54,19 @@ app.get('/projects', async (req, res) => {
     res.render('projects', { title });
 });
 
-// UPDATED: Added async keyword to follow requirements consistently
 app.get('/categories', async (req, res) => {
     res.render('categories', { title: 'Project Categories' });
 });
 
-// UPDATED: Ensure the listen callback is an arrow function (which you already had!)
-app.listen(port, () => {
-    console.log(`Server is running at http://127.0.0.1:${port}`);
-    console.log(`Environment: ${nodeEnv}`);
+/**
+ * Start Server
+ */
+app.listen(port, async () => {
+    try {
+        await testConnection();
+        console.log(`Server is running at http://127.0.0.1:${port}`);
+        console.log(`Environment: ${nodeEnv}`);
+    } catch (error) {
+        console.error('Error connecting to the database:', error.message);
+    }
 });
