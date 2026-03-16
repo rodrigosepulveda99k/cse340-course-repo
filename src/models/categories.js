@@ -1,4 +1,4 @@
-import db from './db.js';
+import pool from './db.js';
 
 /**
  * Fetches all categories from the database.
