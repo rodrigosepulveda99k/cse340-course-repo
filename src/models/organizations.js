@@ -1,14 +1,13 @@
-import pool from './db.js';
+import { pool } from './db.js'; // Importación nombrada con llaves
 
-const getAllOrganizations = async() => {
+export const getAllOrganizations = async () => {
     const query = `
-        SELECT organization_id, name, description, contact_email, logo_filename
-      FROM public.organization;
+        SELECT organization_id, name, description, contact_email, logo_filename 
+        FROM public.organization;
     `;
-
-    const result = await db.query(query);
-
+    
+    // CAMBIO CLAVE: Usar 'pool' en lugar de 'db'
+    const result = await pool.query(query); 
+    
     return result.rows;
-}
-
-export {getAllOrganizations}  
+};
