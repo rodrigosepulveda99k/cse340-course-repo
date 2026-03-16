@@ -2,12 +2,16 @@
 
 <main>
     <h1><%= title %></h1>
+    
     <section class="category-grid">
-        <p>Browse our projects by category:</p>
+        <p class="intro-text">Browse our projects by category:</p>
+        
         <ul>
             <% categories.forEach(category => { %>
                 <li>
-                    <strong><%= category.category_name %></strong>
+                    <div class="category-info">
+                        <strong><%= category.category_name %></strong>
+                    </div>
                 </li>
             <% }); %>
         </ul>

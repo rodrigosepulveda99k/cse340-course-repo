@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { testConnection } from './src/models/db.js';
 import { getAllOrganizations } from './src/models/organizations.js'; // Importación agregada
 import { getAllCategories } from './src/models/categories.js';
@@ -56,14 +57,14 @@ app.get('/projects', async (req, res) => {
 });
 
 app.get('/categories', async (req, res) => {
-    // 1. Obtenemos las categorías de la BD
-    const categories = await getAllCategories();
-    
-    // 2. Definimos el título
-    const title = 'Project Categories';
-
-    // 3. Pasamos las categorías a la vista EJS
-    res.render('categories', { title, categories });
+    try {
+        const categories = await getAllCategories();
+        const title = 'Project Categories';
+        res.render('categories', { title, categories });
+    } catch (error) {
+        console.error("Error loading categories:", error);
+        res.status(500).send("Error loading categories page");
+    }
 });
 
 /**
