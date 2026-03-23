@@ -5,21 +5,28 @@
     <p class="intro-text">Explore current service opportunities and join a project today.</p>
 
     <ul class="project-list">
-        <li class="project-card">
-            <div class="project-info">
-                <strong>Community Garden Restoration</strong>
-                <p>Help us revitalize the local park's green space this weekend.</p>
-                <span class="status-tag">Active</span>
-            </div>
-        </li>
+        <% projects.forEach(project => { %>
+            <li class="project-card">
+                <div class="project-info">
+                    <strong>
+                        <a href="/project/<%= project.project_id %>">
+                            <%= project.title %>
+                        </a>
+                    </strong>
 
-        <li class="project-card">
-            <div class="project-info">
-                <strong>Tech Literacy Workshop</strong>
-                <p>Teach basic computer skills to senior citizens in the community center.</p>
-                <span class="status-tag">Upcoming</span>
-            </div>
-        </li>
+                    <p><%= project.description %></p>
+
+                    <p class="org-link">
+                        Organized by: 
+                        <a href="/organization/<%= project.organization_id %>">
+                            <%= project.organization_name %>
+                        </a>
+                    </p>
+
+                    <span class="status-tag">Upcoming</span>
+                </div>
+            </li>
+        <% }); %>
     </ul>
 </main>
 
