@@ -16,3 +16,24 @@ const getAllCategories = async () => {
 };
 
 export { getAllCategories };
+
+/**
+ * Retrieve a single category by its ID
+ */
+export async function getCategoryById(id) {
+    const sql = "SELECT * FROM category WHERE category_id = $1";
+    const result = await pool.query(sql, [id]);
+    return result.rows[0];
+}
+
+/**
+ * Retrieve all categories associated with a specific service project
+ */
+export async function getCategoriesByProject(projectId) {
+    const sql = `
+        SELECT c.* FROM category c
+        JOIN project_category pc ON c.category_id = pc.category_id
+        WHERE pc.project_id = $1`;
+    const result = await pool.query(sql, [projectId]);
+    return result.rows;
+}

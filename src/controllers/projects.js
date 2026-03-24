@@ -27,19 +27,19 @@ export async function showProjectsPage(req, res) {
  */
 export async function showProjectDetailsPage(req, res) {
     try {
-        const id = req.params.id; // Captured from /project/:id
+        const id = req.params.id;
         const project = await projectModel.getProjectDetails(id);
+        // NEW: Fetch categories for this specific project
+        const categories = await catModel.getCategoriesByProject(id);
 
-        if (!project) {
-            return res.status(404).send("Project not found");
-        }
+        if (!project) return res.status(404).send("Project not found");
 
         res.render('project', { 
-            title: project.title,
-            project 
+            title: project.title, 
+            project,
+            categories // Pass categories to the view
         });
     } catch (error) {
-        console.error("Error in showProjectDetailsPage controller:", error);
         res.status(500).send("Internal Server Error");
     }
 }

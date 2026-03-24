@@ -6,11 +6,15 @@
     <section class="category-grid">
         <p class="intro-text">Browse our projects by category:</p>
         
-        <ul>
+        <ul class="category-list">
             <% categories.forEach(category => { %>
-                <li>
+                <li class="category-card">    
                     <div class="category-info">
-                        <strong><%= category.category_name %></strong>
+                        <strong>
+                            <a href="/category/<%= category.category_id %>">
+                                <%= category.category_name %>
+                            </a>
+                        </strong>
                     </div>
                 </li>
             <% }); %>

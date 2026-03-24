@@ -73,3 +73,16 @@ export async function getProjectDetails(id) {
         throw error;
     }
 }
+
+/**
+ * Retrieve all service projects for a given category
+ */
+export async function getProjectsByCategory(categoryId) {
+    const sql = `
+        SELECT p.* FROM project p
+        JOIN project_category pc ON p.project_id = pc.project_id
+        WHERE pc.category_id = $1
+        ORDER BY p.project_name ASC`;
+    const result = await pool.query(sql, [categoryId]);
+    return result.rows;
+}
