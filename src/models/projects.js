@@ -1,27 +1,19 @@
 import { pool } from './db.js';
 
-/**
- * Get all projects from the database
- * Criteria: Fetches dynamic data for the projects page
- */
-export async function getAllProjects() {
+export const getAllProjects = async () => {
     try {
-        const sql = "SELECT * FROM project ORDER BY project_name ASC";
+        const sql = 'SELECT * FROM project ORDER BY project_name ASC';
         const result = await pool.query(sql);
-        
+
         console.log(`Executed query: { text: '${sql}', rows: ${result.rowCount} }`);
         return result.rows;
     } catch (error) {
-        console.error("Error in getAllProjects model:", error);
+        console.error('Error in getAllProjects model:', error);
         throw error;
     }
-}
+};
 
-/**
- * Get the next N upcoming projects
- * Criteria: Filters by date >= current date and joins with organization table
- */
-export async function getUpcomingProjects(number_of_projects) {
+export const getUpcomingProjects = async (number_of_projects) => {
     try {
         const sql = `
             SELECT 
@@ -37,21 +29,17 @@ export async function getUpcomingProjects(number_of_projects) {
             WHERE p.date >= CURRENT_DATE
             ORDER BY p.date ASC
             LIMIT $1`;
-        
+
         const result = await pool.query(sql, [number_of_projects]);
         console.log(`Executed getUpcomingProjects: { rows: ${result.rowCount} }`);
         return result.rows;
     } catch (error) {
-        console.error("Error in getUpcomingProjects model:", error);
+        console.error('Error in getUpcomingProjects model:', error);
         throw error;
     }
-}
+};
 
-/**
- * Get details for a single project by its ID
- * Criteria: Joins with organization table to get the partner name
- */
-export async function getProjectDetails(id) {
+export const getProjectDetails = async (id) => {
     try {
         const sql = `
             SELECT 
@@ -65,19 +53,16 @@ export async function getProjectDetails(id) {
             FROM project p
             JOIN organization o ON p.organization_id = o.organization_id
             WHERE p.project_id = $1`;
-        
+
         const result = await pool.query(sql, [id]);
-        return result.rows[0]; // Returns a single project object
+        return result.rows[0];
     } catch (error) {
-        console.error("Error in getProjectDetails model:", error);
+        console.error('Error in getProjectDetails model:', error);
         throw error;
     }
-}
+};
 
-/**
- * Retrieve all service projects for a given category
- */
-export async function getProjectsByCategory(categoryId) {
+export const getProjectsByCategory = async (categoryId) => {
     const sql = `
         SELECT p.* FROM project p
         JOIN project_category pc ON p.project_id = pc.project_id
@@ -85,4 +70,4 @@ export async function getProjectsByCategory(categoryId) {
         ORDER BY p.project_name ASC`;
     const result = await pool.query(sql, [categoryId]);
     return result.rows;
-}
+};

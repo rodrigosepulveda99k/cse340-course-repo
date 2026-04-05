@@ -1,0 +1,13 @@
+<%- include('partials/header') %>
+
+<main>
+    <h1><%= organization.name %></h1>
+
+    <section class="organization-detail">
+        <img src="/images/<%= organization.logo_filename %>" alt="<%= organization.name %> logo">
+        <p><strong>Description:</strong> <%= organization.description %></p>
+        <p><strong>Contact:</strong> <a href="mailto:<%= organization.contact_email %>"><%= organization.contact_email %></a></p>
+    </section>
+</main>
+
+<%- include('partials/footer') %>

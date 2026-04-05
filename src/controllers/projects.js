@@ -1,45 +1,38 @@
 import * as projectModel from '../models/projects.js';
+import * as catModel from '../models/categories.js';
 
-// Constant to limit the number of projects displayed on the main page
 const NUMBER_OF_UPCOMING_PROJECTS = 5;
 
-/**
- * Controller to show the main projects page
- * Displays only the next 5 upcoming projects
- */
-export async function showProjectsPage(req, res) {
+export const showProjectsPage = async (req, res) => {
     try {
         const projects = await projectModel.getUpcomingProjects(NUMBER_OF_UPCOMING_PROJECTS);
-        
-        res.render('projects', { 
-            title: "Upcoming Service Projects", 
-            projects 
+
+        res.render('projects', {
+            title: 'Upcoming Service Projects',
+            projects
         });
     } catch (error) {
-        console.error("Error in showProjectsPage controller:", error);
-        res.status(500).send("Internal Server Error");
+        console.error('Error in showProjectsPage controller:', error);
+        res.status(500).send('Internal Server Error');
     }
-}
+};
 
-/**
- * Controller to show the details of a specific project
- * Extracts the ID from the URL parameters
- */
-export async function showProjectDetailsPage(req, res) {
+export const showProjectDetailsPage = async (req, res) => {
     try {
         const id = req.params.id;
         const project = await projectModel.getProjectDetails(id);
-        // NEW: Fetch categories for this specific project
+
+        if (!project) return res.status(404).send('Project not found');
+
         const categories = await catModel.getCategoriesByProject(id);
 
-        if (!project) return res.status(404).send("Project not found");
-
-        res.render('project', { 
-            title: project.title, 
+        res.render('project', {
+            title: project.title,
             project,
-            categories // Pass categories to the view
+            categories
         });
     } catch (error) {
-        res.status(500).send("Internal Server Error");
+        console.error('Error in showProjectDetailsPage controller:', error);
+        res.status(500).send('Internal Server Error');
     }
-}
+};

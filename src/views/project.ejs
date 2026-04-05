@@ -1,0 +1,29 @@
+<%- include('partials/header') %>
+
+<main>
+    <h1><%= project.title %></h1>
+
+    <section class="project-detail">
+        <p><strong>Description:</strong> <%= project.description %></p>
+        <p><strong>Date:</strong> <%= project.date ? project.date.toISOString().split('T')[0] : 'TBD' %></p>
+        <p><strong>Location:</strong> <%= project.location %></p>
+        <p>
+            <strong>Partner organization:</strong>
+            <a href="/organization/<%= project.organization_id %>">
+                <%= project.organization_name %>
+            </a>
+        </p>
+        <% if (categories && categories.length) { %>
+            <div class="project-categories">
+                <h2>Categories</h2>
+                <ul>
+                    <% categories.forEach(category => { %>
+                        <li><%= category.category_name %></li>
+                    <% }); %>
+                </ul>
+            </div>
+        <% } %>
+    </section>
+</main>
+
+<%- include('partials/footer') %>
