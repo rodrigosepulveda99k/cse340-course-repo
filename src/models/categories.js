@@ -37,3 +37,25 @@ export async function getCategoriesByProject(projectId) {
     const result = await pool.query(sql, [projectId]);
     return result.rows;
 }
+
+// Insertar una nueva categoría
+export async function createCategory(category_name) {
+  try {
+    const sql = "INSERT INTO category (category_name) VALUES ($1) RETURNING *";
+    return await pool.query(sql, [category_name]);
+  } catch (error) {
+    console.error("Error creating category:", error);
+    throw error;
+  }
+}
+
+// Actualizar una categoría existente
+export async function updateCategory(category_id, category_name) {
+  try {
+    const sql = "UPDATE category SET category_name = $1 WHERE category_id = $2 RETURNING *";
+    return await pool.query(sql, [category_name, category_id]);
+  } catch (error) {
+    console.error("Error updating category:", error);
+    throw error;
+  }
+}

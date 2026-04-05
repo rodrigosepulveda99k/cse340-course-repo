@@ -3,7 +3,9 @@ const router = Router();
 
 // Import the controller functions
 import { showProjectsPage, showProjectDetailsPage } from './controllers/projects.js';
-import { showCategoryDetailsPage } from './src/controllers/categories.js';
+
+// Import category routes
+import categoryRoutes from './routes/categoryRoute.js';
 
 // Route for the main projects page (Lists the next 5 upcoming projects)
 // Note: No changes needed here if the route already existed, 
@@ -14,7 +16,7 @@ router.get('/projects', showProjectsPage);
 // The ':id' is a route parameter that captures the ID from the URL
 router.get('/project/:id', showProjectDetailsPage);
 
-// Category Details Route
-router.get('/category/:id', showCategoryDetailsPage);
+// Use category routes
+router.use('/', categoryRoutes);
 
 export default router;

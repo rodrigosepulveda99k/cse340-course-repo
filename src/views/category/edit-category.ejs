@@ -1,0 +1,19 @@
+<% if (errors) { %>
+  <ul>
+    <% errors.forEach(error => { %>
+      <li><%= error.msg %></li>
+    <% }) %>
+  </ul>
+<% } %>
+<form action="/edit-category/<%= category.category_id %>" method="POST">
+  <label for="category_name">Nombre de la Categoría:</label>
+  <input type="text" 
+         id="category_name" 
+         name="category_name" 
+         value="<%= category_name || category.category_name %>" 
+         required 
+         maxlength="100">
+         
+  <input type="hidden" name="category_id" value="<%= category.category_id %>">
+  <button type="submit">Actualizar Categoría</button>
+</form>
