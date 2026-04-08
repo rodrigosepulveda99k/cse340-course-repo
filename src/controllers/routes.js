@@ -2,6 +2,14 @@ import { Router } from 'express';
 import categoryRoutes from '../routes/categoryRoute.js';
 import { showCategoriesPage } from './categories.js';
 
+import { 
+    showUserRegistrationForm, 
+    processUserRegistrationForm,
+    showLoginForm,
+    processLoginForm,
+    processLogout 
+} from './users.js';
+
 // Organizaciones
 import { 
     showOrganizationsPage, 
@@ -46,5 +54,12 @@ router.get('/projects', showProjectsPage);
 router.get('/project/:id', showProjectDetailsPage);
 router.get('/new-project', showNewProjectForm);
 router.post('/new-project', projectValidation, processNewProjectForm);
+
+// --- Rutas de Registro ---
+router.get('/register', showUserRegistrationForm);
+router.post('/register', processUserRegistrationForm);
+router.get('/login', showLoginForm);
+router.post('/login', processLoginForm);
+router.get('/logout', processLogout);
 
 export default router;

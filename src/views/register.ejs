@@ -1,0 +1,45 @@
+<%- include('partials/header') %>
+
+<main class="container">
+    <h1><%= title %></h1>
+
+    <form action="/register" method="POST" class="form-card">
+        <div class="form-group">
+            <label for="name">Full Name</label>
+            <input
+                type="text"
+                id="name"
+                name="name"
+                required
+                placeholder="Enter your name"
+            />
+        </div>
+        
+        <div class="form-group">
+            <label for="email">Email (Username)</label>
+            <input
+                type="email"
+                id="email"
+                name="email"
+                required
+                placeholder="example@mail.com"
+            />
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input
+                type="password"
+                id="password"
+                name="password"
+                required
+                minlength="6"
+                placeholder="At least 6 characters"
+            />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Register</button>
+    </form>
+</main>
+
+<%- include('partials/footer') %>

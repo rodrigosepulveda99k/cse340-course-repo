@@ -20,36 +20,44 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 2. CONFIGURACIÓN DE SESIÓN (Agregado aquí)
+// 2. CONFIGURACIÓN DE SESIÓN
 app.use(session({
-    secret: 'your-secret-key',
+    secret: process.env.SESSION_SECRET || 'your-secret-key', // Tip: usa dotenv para el secret
     resave: false,
     saveUninitialized: true,
     cookie: { maxAge: 60 * 60 * 1000 } // 1 hora
 }));
 
-// 3. CONFIGURACIÓN DE FLASH (Agregado aquí - Debe ir después de session)
+// 3. CONFIGURACIÓN DE FLASH (Debe ir después de session)
 app.use(flash);
 
 // 4. CONFIGURACIÓN DE VISTAS
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'src/views'));
 
-// 5. MIDDLEWARES DE LOGS Y LOCALES
+// 5. MIDDLEWARE DE LOGS Y VARIABLES LOCALES (UNIFICADO)
 app.use((req, res, next) => {
+    // Log de peticiones en desarrollo
     if (nodeEnv === 'development') {
         console.log(`${req.method} ${req.url}`);
     }
-    next();
-});
 
-app.use((req, res, next) => {
+    // --- VARIABLES PARA LAS VISTAS ---
+    res.locals.isLoggedIn = false;
+    res.locals.user = null;
+
+    if (req.session && req.session.user) {
+        res.locals.isLoggedIn = true;
+        res.locals.user = req.session.user; 
+    }
+
     res.locals.NODE_ENV = nodeEnv;
     res.locals.nodeEnv = nodeEnv;
+    
     next();
 });
 
-// 6. RUTAS (Siempre después de session y flash)
+// 6. RUTAS (Siempre después de session, flash y locals)
 app.use(routes);
 
 // 7. INICIO DEL SERVIDOR
