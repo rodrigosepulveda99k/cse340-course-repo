@@ -1,72 +1,65 @@
 import bcrypt from 'bcrypt';
-import { createUser, authenticateUser } from '../models/users.js';
+import { createUser, authenticateUser, getAllUsers } from '../models/users.js';
 
-/* --- MIDDLEWARE DE PROTECCIÓN --- */
+/* --- MIDDLEWARES DE PROTECCIÓN Y AUTORIZACIÓN --- */
 
-/**
- * Verifica si el usuario tiene una sesión activa antes de permitir el acceso.
- * Como QA, esto asegura que las rutas privadas no sean accesibles vía URL directa.
- */
+// Verifica si el usuario está logueado
 export const requireLogin = (req, res, next) => {
     if (!req.session || !req.session.user) {
         if (req.flash) req.flash('error', 'You must be logged in to access that page.');
         return res.redirect('/login');
     }
-    // Si el usuario existe, pasamos al siguiente middleware o controlador
+    next();
+};
+
+/**
+ * Requerimiento de la Tarea: Restringir acceso solo a Admins.
+ * Verifica que el usuario tenga el rol de administrador.
+ */
+export const requireAdmin = (req, res, next) => {
+    const user = req.session.user;
+    // Comprobamos si el rol es 'admin' o si el ID de rol corresponde al administrador (ej. 1)
+    if (!user || (user.role_name !== 'admin' && user.role_id !== 1)) {
+        if (req.flash) req.flash('error', 'Access denied. Administrator permissions required.');
+        return res.redirect('/dashboard');
+    }
     next();
 };
 
 /* --- REGISTRO --- */
 
-// Muestra el formulario de registro
 export const showUserRegistrationForm = (req, res) => {
     res.render('register', { title: 'Register' });
 };
 
-// Procesa los datos del formulario de registro
 export const processUserRegistrationForm = async (req, res) => {
     const { name, email, password } = req.body;
-
     try {
         const salt = await bcrypt.genSalt(10);
         const passwordHash = await bcrypt.hash(password, salt);
-
         await createUser(name, email, passwordHash);
-
         if (req.flash) req.flash('success', 'Registration successful! Please log in.');
         res.redirect('/login');
     } catch (error) {
         console.error('Error registering user:', error);
-        if (req.flash) req.flash('error', 'An error occurred during registration. Maybe the email is taken?');
+        if (req.flash) req.flash('error', 'An error occurred during registration.');
         res.redirect('/register');
     }
 };
 
 /* --- LOGIN --- */
 
-// Muestra el formulario de inicio de sesión
 export const showLoginForm = (req, res) => {
     res.render('login', { title: 'Login' });
 };
 
-// Valida credenciales e inicia la sesión del usuario
 export const processLoginForm = async (req, res) => {
     const { email, password } = req.body;
-
     try {
         const user = await authenticateUser(email, password);
-        
         if (user) {
-            // Guardamos el objeto usuario en la sesión (sin el password_hash)
             req.session.user = user;
-            
             if (req.flash) req.flash('success', 'Login successful!');
-
-            if (process.env.NODE_ENV === 'development') {
-                console.log('User logged in session:', user);
-            }
-
-            // Redirección al Dashboard tras éxito (Requerimiento Semana 05)
             res.redirect('/dashboard');
         } else {
             if (req.flash) req.flash('error', 'Invalid email or password.');
@@ -74,36 +67,48 @@ export const processLoginForm = async (req, res) => {
         }
     } catch (error) {
         console.error('Error during login:', error);
-        if (req.flash) req.flash('error', 'An error occurred during login.');
         res.redirect('/login');
     }
 };
 
 /* --- DASHBOARD --- */
 
-/**
- * Renderiza la vista del Dashboard con los datos del usuario en sesión.
- */
 export const showDashboard = (req, res) => {
-    // Al llegar aquí, requireLogin ya validó que req.session.user existe
-    const { name, email } = req.session.user;
-    
+    // Pasamos el objeto user completo para que la vista dashboard.ejs 
+    // pueda decidir si mostrar el link de "Admin" o no.
+    const user = req.session.user;
     res.render('dashboard', { 
         title: 'User Dashboard',
-        name: name,
-        email: email
+        user: user,
+        name: user.name,
+        email: user.email
     });
+};
+
+/* --- LISTADO DE USUARIOS (ADMIN ONLY) --- */
+
+/**
+ * Requerimiento de la Tarea: Obtener todos los usuarios y mostrarlos.
+ */
+export const showUserList = async (req, res) => {
+    try {
+        const users = await getAllUsers();
+        res.render('user-list', { 
+            title: 'Registered Users', 
+            users 
+        });
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        if (req.flash) req.flash('error', 'Could not retrieve user list.');
+        res.redirect('/dashboard');
+    }
 };
 
 /* --- LOGOUT --- */
 
-// Destruye la sesión y limpia la cookie del navegador
 export const processLogout = (req, res) => {
     req.session.destroy((err) => {
-        if (err) {
-            console.error('Error destroying session:', err);
-        }
-        // 'connect.sid' es el nombre por defecto de la cookie de express-session
+        if (err) console.error('Error destroying session:', err);
         res.clearCookie('connect.sid'); 
         res.redirect('/login');
     });

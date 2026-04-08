@@ -8,8 +8,10 @@ import {
     showLoginForm,
     processLoginForm,
     processLogout,
-    showDashboard, 
-    requireLogin 
+    showDashboard,
+    requireLogin,
+    requireAdmin,
+    showUserList 
 } from './users.js';
 
 // Organizaciones
@@ -70,5 +72,6 @@ router.post('/login', processLoginForm);
 router.get('/logout', processLogout);
 
 router.get('/dashboard', requireLogin, showDashboard);
+router.get('/users', requireLogin, requireAdmin, showUserList);
 
 export default router;

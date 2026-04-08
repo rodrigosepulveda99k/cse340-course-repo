@@ -4,13 +4,25 @@
     <h1><%= title %></h1>
 
     <div class="card dashboard-info">
-        <h2>Welcome to your Dashboard</h2>
-        <p><strong>Name:</strong> <%= name %></p>
-        <p><strong>Email (Username):</strong> <%= email %></p>
+        <h2>Welcome to your Dashboard, <%= user.name %>!</h2>
+        <p><strong>Name:</strong> <%= user.name %></p>
+        <p><strong>Email (Username):</strong> <%= user.email %></p>
+        <p><strong>Account Type:</strong> <span class="badge"><%= user.role_name %></span></p>
     </div>
+
+    <%# REQUERIMIENTO DEL ASSIGNMENT: Solo visible para administradores %>
+    <% if (user.role_name === 'admin' || user.role_id === 1) { %>
+        <hr>
+        <section class="admin-actions">
+            <h3>Administrative Functions</h3>
+            <p>As an administrator, you can manage the system users here:</p>
+            <a href="/users" class="btn btn-admin">Manage Registered Users</a>
+        </section>
+    <% } %>
 
     <hr>
     <div class="actions">
+        <p>Finished for now?</p>
         <a href="/logout" class="btn btn-danger">Log Out</a>
     </div>
 </main>
