@@ -89,3 +89,56 @@ export const updateCategory = async (req, res) => {
         res.status(500).send('Error updating category');
     }
 };
+
+export const showAssignCategoriesForm = async (req, res) => {
+    try {
+        const projectId = req.params.projectId;
+
+        // Recuperamos los datos usando tus modelos importados
+        const projectDetails = await projModel.getProjectDetails(projectId);
+        const categories = await catModel.getAllCategories();
+        // Usamos el nombre de función que YA tenés en tu categories model
+        const assignedCategories = await catModel.getCategoriesByProject(projectId);
+
+        const title = 'Assign Categories to Project';
+
+        // Renderizamos la vista (la crearemos en el paso siguiente)
+        res.render('assign-categories', { 
+            title, 
+            projectId, 
+            projectDetails, 
+            categories, 
+            assignedCategories 
+        });
+    } catch (error) {
+        console.error('Error in showAssignCategoriesForm:', error);
+        res.status(500).send('Error loading assignment form');
+    }
+};
+
+export const processAssignCategoriesForm = async (req, res) => {
+    try {
+        const projectId = req.params.projectId;
+        
+        // El formulario enviará 'categoryIds'. Si no hay ninguno, usamos []
+        const selectedCategoryIds = req.body.categoryIds || [];
+        
+        // Lógica de QA: Si es un solo checkbox, Express manda un String. 
+        // Si son varios, manda un Array. Forzamos siempre Array para el loop del modelo.
+        const categoryIdsArray = Array.isArray(selectedCategoryIds) 
+            ? selectedCategoryIds 
+            : [selectedCategoryIds];
+
+        // Llamamos a la función que agregamos en el Paso 1
+        await catModel.updateCategoryAssignments(projectId, categoryIdsArray);
+
+        req.flash('success', 'Categories updated successfully.');
+        
+        // Guardamos la sesión antes de redirigir para asegurar que el flash llegue
+        req.session.save(() => res.redirect(`/project/${projectId}`));
+    } catch (error) {
+        console.error('Error in processAssignCategoriesForm:', error);
+        req.flash('error', 'There was an error updating categories.');
+        res.redirect(`/project/${projectId}`);
+    }
+};

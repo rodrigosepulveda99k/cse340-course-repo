@@ -60,3 +60,25 @@ export const getProjectsByCategory = async (categoryId) => {
         throw error;
     }
 };
+// Esta queda interna (sin export)
+const assignCategoryToProject = async (categoryId, projectId) => {
+    const query = `
+        INSERT INTO project_category (category_id, project_id)
+        VALUES ($1, $2);
+    `;
+    // Usamos 'pool' que es como lo tenés definido arriba
+    await pool.query(query, [categoryId, projectId]);
+};
+
+// Esta se exporta para el controlador
+export const updateCategoryAssignments = async (projectId, categoryIds) => {
+    const deleteQuery = `
+        DELETE FROM project_category
+        WHERE project_id = $1;
+    `;
+    await pool.query(deleteQuery, [projectId]);
+
+    for (const categoryId of categoryIds) {
+        await assignCategoryToProject(categoryId, projectId);
+    }
+};

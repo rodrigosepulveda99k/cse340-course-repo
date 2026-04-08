@@ -26,6 +26,20 @@
                         </li>
                     <% }); %>
                 </ul>
+                
+                <p class="action-link">
+                    <a href="/assign-categories/<%= project.project_id %>" class="btn-edit">
+                        Edit Categories
+                    </a>
+                </p>
+            </div>
+        <% } else { %>
+            <div class="project-categories">
+                <p class="action-link">
+                    <a href="/assign-categories/<%= project.project_id %>" class="btn-edit">
+                        Add Categories to Project
+                    </a>
+                </p>
             </div>
         <% } %>
     </section>
