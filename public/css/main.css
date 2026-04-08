@@ -228,21 +228,25 @@ li p {
     background-color: #004a94;
 }
 
-/* Flash message styles */
+/* Flash message styles (CORREGIDO) */
 .alert {
     padding: 15px;
-    margin: 10px auto;
+    margin: 20px auto;
     max-width: 800px;
     border: 1px solid transparent;
     border-radius: 4px;
     text-align: center;
+    font-weight: bold;
 }
-.alert-success {
+
+/* Nota el cambio: .alert.success en lugar de .alert-success */
+.alert.success {
     color: #155724;
     background-color: #d4edda;
     border-color: #c3e6cb;
 }
-.alert-error {
+
+.alert.error {
     color: #721c24;
     background-color: #f8d7da;
     border-color: #f5c6cb;
