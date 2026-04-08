@@ -13,12 +13,17 @@
                 <%= project.organization_name %>
             </a>
         </p>
-        <% if (categories && categories.length) { %>
+
+        <% if (locals.categories && categories.length > 0) { %>
             <div class="project-categories">
                 <h2>Categories</h2>
-                <ul>
+                <ul class="tags-list">
                     <% categories.forEach(category => { %>
-                        <li><%= category.category_name %></li>
+                        <li>
+                            <a href="/category/<%= category.category_id %>" class="category-tag">
+                                <%= category.category_name %>
+                            </a>
+                        </li>
                     <% }); %>
                 </ul>
             </div>

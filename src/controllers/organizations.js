@@ -29,3 +29,35 @@ export const showOrganizationDetailsPage = async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 };
+
+// Se agregó "export" para que las rutas puedan usarlo
+export const showNewOrganizationForm = async (req, res) => {
+    const title = 'Add New Organization';
+    res.render('new-organization', { title });
+};
+
+// NUEVA FUNCIÓN: Procesa el envío del formulario
+export const processNewOrganizationForm = async (req, res) => {
+    try {
+        // Extraemos los datos del req.body (nombres del atributo 'name' en tu EJS)
+        const { name, description, contactEmail } = req.body;
+        
+        // El logo fijo como pide la tarea
+        const logoFilename = 'placeholder-logo.png'; 
+
+        // Llamamos al modelo que corregimos antes
+        const organizationId = await orgModel.createOrganization(
+            name, 
+            description, 
+            contactEmail, 
+            logoFilename
+        );
+
+        // Redirigimos a la página de detalles de la nueva organización
+        res.redirect(`/organization/${organizationId}`);
+    } catch (error) {
+        console.error('Error in processNewOrganizationForm:', error);
+        // Aquí podrías renderizar de nuevo el form con un mensaje de error
+        res.status(500).send('Error processing the new organization form');
+    }
+};

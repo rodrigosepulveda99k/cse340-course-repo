@@ -13,11 +13,16 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+// 1. MIDDLEWARES ESTÁTICOS Y DE PARSEO (Deben ir antes de las rutas)
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json()); // Opcional pero recomendado
+app.use(express.urlencoded({ extended: true })); // ¡IMPORTANTE AQUÍ!
+
+// 2. CONFIGURACIÓN DE VISTAS
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'src/views'));
 
+// 3. MIDDLEWARES DE LOGS Y LOCALES
 app.use((req, res, next) => {
     if (nodeEnv === 'development') {
         console.log(`${req.method} ${req.url}`);
@@ -31,8 +36,10 @@ app.use((req, res, next) => {
     next();
 });
 
+// 4. RUTAS (Siempre al final de los middlewares)
 app.use(routes);
 
+// 5. INICIO DEL SERVIDOR
 app.listen(port, async () => {
     try {
         await testConnection();

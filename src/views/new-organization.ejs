@@ -1,0 +1,28 @@
+<%- include('partials/header') %>
+
+<main class="container">
+    <div class="form-card">
+        <h1>Add New Organization</h1>
+        
+        <form action="/new-organization" method="POST" class="styled-form">
+            <div class="form-group">
+                <label for="name">Organization Name</label>
+                <input type="text" id="name" name="name" required placeholder="e.g. Red Cross">
+            </div>
+
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" required placeholder="Tell us about the org..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="contactEmail">Contact Email</label>
+                <input type="email" id="contactEmail" name="contactEmail" required placeholder="email@example.com">
+            </div>
+
+            <button type="submit" class="btn-submit">Create Organization</button>
+        </form>
+    </div>
+</main>
+
+<%- include('partials/footer') %>
