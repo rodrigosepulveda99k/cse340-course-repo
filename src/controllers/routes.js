@@ -7,7 +7,9 @@ import {
     processUserRegistrationForm,
     showLoginForm,
     processLoginForm,
-    processLogout 
+    processLogout,
+    showDashboard, 
+    requireLogin 
 } from './users.js';
 
 // Organizaciones
@@ -55,11 +57,18 @@ router.get('/project/:id', showProjectDetailsPage);
 router.get('/new-project', showNewProjectForm);
 router.post('/new-project', projectValidation, processNewProjectForm);
 
+// --- Rutas Públicas ---
+router.get('/', (req, res) => {
+    res.render('index', { title: 'Home' });
+});
+
 // --- Rutas de Registro ---
 router.get('/register', showUserRegistrationForm);
 router.post('/register', processUserRegistrationForm);
 router.get('/login', showLoginForm);
 router.post('/login', processLoginForm);
 router.get('/logout', processLogout);
+
+router.get('/dashboard', requireLogin, showDashboard);
 
 export default router;

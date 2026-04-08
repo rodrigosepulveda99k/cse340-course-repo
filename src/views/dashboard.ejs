@@ -1,0 +1,18 @@
+<%- include('partials/header') %>
+
+<main class="container">
+    <h1><%= title %></h1>
+
+    <div class="card dashboard-info">
+        <h2>Welcome to your Dashboard</h2>
+        <p><strong>Name:</strong> <%= name %></p>
+        <p><strong>Email (Username):</strong> <%= email %></p>
+    </div>
+
+    <hr>
+    <div class="actions">
+        <a href="/logout" class="btn btn-danger">Log Out</a>
+    </div>
+</main>
+
+<%- include('partials/footer') %>

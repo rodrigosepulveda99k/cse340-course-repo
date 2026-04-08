@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt';
 /**
  * Inserta un nuevo usuario en la base de datos asignándole el rol 'user' por defecto.
  */
-const createUser = async (name, email, passwordHash) => {
+export const createUser = async (name, email, passwordHash) => {
     const default_role = 'user';
     const query = `
         INSERT INTO users (name, email, password_hash, role_id) 
@@ -23,7 +23,7 @@ const createUser = async (name, email, passwordHash) => {
 };
 
 /**
- * Busca un usuario por su email.
+ * Busca un usuario por su email (Uso interno).
  */
 const findUserByEmail = async (email) => {
     const query = `
@@ -41,14 +41,14 @@ const findUserByEmail = async (email) => {
 };
 
 /**
- * Compara la contraseña en texto plano con el hash almacenado.
+ * Compara la contraseña en texto plano con el hash almacenado (Uso interno).
  */
 const verifyPassword = async (password, passwordHash) => {
     return await bcrypt.compare(password, passwordHash);
 };
 
 /**
- * Autentica al usuario y devuelve sus datos (sin el hash de la contraseña).
+ * Autentica al usuario y devuelve sus datos (sin el hash).
  */
 export const authenticateUser = async (email, password) => {
     const user = await findUserByEmail(email);
@@ -60,13 +60,9 @@ export const authenticateUser = async (email, password) => {
     const isPasswordCorrect = await verifyPassword(password, user.password_hash);
 
     if (isPasswordCorrect) {
-        // Desestructuración para eliminar el hash antes de devolver el objeto
         const { password_hash, ...userWithoutHash } = user;
         return userWithoutHash;
     }
 
     return null;
 };
-
-// Exportamos createUser también para que el registro siga funcionando
-export { createUser };

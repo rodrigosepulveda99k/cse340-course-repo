@@ -1,6 +1,21 @@
 import bcrypt from 'bcrypt';
 import { createUser, authenticateUser } from '../models/users.js';
 
+/* --- MIDDLEWARE DE PROTECCIÓN --- */
+
+/**
+ * Verifica si el usuario tiene una sesión activa antes de permitir el acceso.
+ * Como QA, esto asegura que las rutas privadas no sean accesibles vía URL directa.
+ */
+export const requireLogin = (req, res, next) => {
+    if (!req.session || !req.session.user) {
+        if (req.flash) req.flash('error', 'You must be logged in to access that page.');
+        return res.redirect('/login');
+    }
+    // Si el usuario existe, pasamos al siguiente middleware o controlador
+    next();
+};
+
 /* --- REGISTRO --- */
 
 // Muestra el formulario de registro
@@ -8,7 +23,7 @@ export const showUserRegistrationForm = (req, res) => {
     res.render('register', { title: 'Register' });
 };
 
-// Procesa el registro de un nuevo usuario
+// Procesa los datos del formulario de registro
 export const processUserRegistrationForm = async (req, res) => {
     const { name, email, password } = req.body;
 
@@ -19,7 +34,7 @@ export const processUserRegistrationForm = async (req, res) => {
         await createUser(name, email, passwordHash);
 
         if (req.flash) req.flash('success', 'Registration successful! Please log in.');
-        res.redirect('/login'); // Redirigimos al login para que estrene su cuenta
+        res.redirect('/login');
     } catch (error) {
         console.error('Error registering user:', error);
         if (req.flash) req.flash('error', 'An error occurred during registration. Maybe the email is taken?');
@@ -29,12 +44,12 @@ export const processUserRegistrationForm = async (req, res) => {
 
 /* --- LOGIN --- */
 
-// Muestra el formulario de login
+// Muestra el formulario de inicio de sesión
 export const showLoginForm = (req, res) => {
     res.render('login', { title: 'Login' });
 };
 
-// Procesa el inicio de sesión
+// Valida credenciales e inicia la sesión del usuario
 export const processLoginForm = async (req, res) => {
     const { email, password } = req.body;
 
@@ -42,17 +57,17 @@ export const processLoginForm = async (req, res) => {
         const user = await authenticateUser(email, password);
         
         if (user) {
-            // Guardamos el objeto usuario en la sesión (Paso crítico de QA)
+            // Guardamos el objeto usuario en la sesión (sin el password_hash)
             req.session.user = user;
             
             if (req.flash) req.flash('success', 'Login successful!');
 
-            // Log de depuración para ver que el objeto no traiga el password_hash
             if (process.env.NODE_ENV === 'development') {
-                console.log('User logged in:', user);
+                console.log('User logged in session:', user);
             }
 
-            res.redirect('/');
+            // Redirección al Dashboard tras éxito (Requerimiento Semana 05)
+            res.redirect('/dashboard');
         } else {
             if (req.flash) req.flash('error', 'Invalid email or password.');
             res.redirect('/login');
@@ -64,16 +79,31 @@ export const processLoginForm = async (req, res) => {
     }
 };
 
+/* --- DASHBOARD --- */
+
+/**
+ * Renderiza la vista del Dashboard con los datos del usuario en sesión.
+ */
+export const showDashboard = (req, res) => {
+    // Al llegar aquí, requireLogin ya validó que req.session.user existe
+    const { name, email } = req.session.user;
+    
+    res.render('dashboard', { 
+        title: 'User Dashboard',
+        name: name,
+        email: email
+    });
+};
+
 /* --- LOGOUT --- */
 
-// Cierra la sesión del usuario
+// Destruye la sesión y limpia la cookie del navegador
 export const processLogout = (req, res) => {
-    // Destruye la sesión en el servidor
     req.session.destroy((err) => {
         if (err) {
             console.error('Error destroying session:', err);
         }
-        // Limpiamos la cookie del cliente y redirigimos
+        // 'connect.sid' es el nombre por defecto de la cookie de express-session
         res.clearCookie('connect.sid'); 
         res.redirect('/login');
     });
