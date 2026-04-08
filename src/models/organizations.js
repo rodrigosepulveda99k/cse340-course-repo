@@ -1,4 +1,6 @@
-import { pool } from './db.js';
+import { pool } from '../models/db.js'; // Asegúrate de que la ruta a db.js sea correcta
+
+/* --- FUNCIONES DE BASE DE DATOS (MODELO) --- */
 
 export const getAllOrganizations = async () => {
     const query = `
@@ -19,28 +21,73 @@ export const getOrganizationById = async (id) => {
     return result.rows[0];
 };
 
-/**
- * Creates a new organization in the database.
- */
 export const createOrganization = async (name, description, contactEmail, logoFilename) => {
     const query = `
       INSERT INTO organization (name, description, contact_email, logo_filename)
       VALUES ($1, $2, $3, $4)
       RETURNING organization_id
     `;
-
     const query_params = [name, description, contactEmail, logoFilename];
-    
-    // CORRECCIÓN: Usamos 'pool' que es lo que importaste arriba
     const result = await pool.query(query, query_params);
 
     if (result.rows.length === 0) {
         throw new Error('Failed to create organization');
     }
-
-    if (process.env.ENABLE_SQL_LOGGING === 'true') {
-        console.log('Created new organization with ID:', result.rows[0].organization_id);
-    }
-
     return result.rows[0].organization_id;
+};
+
+/* --- FUNCIONES DEL CONTROLADOR (LÓGICA) --- */
+
+export const showOrganizationsPage = async (req, res) => {
+    try {
+        const organizations = await getAllOrganizations();
+        res.render('organizations', {
+            title: 'Our Partner Organizations',
+            organizations
+        });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).send('Internal Server Error');
+    }
+};
+
+export const showOrganizationDetailsPage = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const organization = await getOrganizationById(id);
+        if (!organization) return res.status(404).send('Organization not found');
+
+        res.render('organization-details', {
+            title: organization.name,
+            organization
+        });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).send('Internal Server Error');
+    }
+};
+
+export const showNewOrganizationForm = async (req, res) => {
+    res.render('new-organization', { title: 'Add New Organization' });
+};
+
+export const processNewOrganizationForm = async (req, res) => {
+    try {
+        const { name, description, contactEmail } = req.body;
+        const logoFilename = 'placeholder-logo.png';
+
+        const organizationId = await createOrganization(name, description, contactEmail, logoFilename);
+        
+        // 1. Guardamos el mensaje
+        req.flash('success', 'Organization added successfully!');
+        
+        // 2. VERIFICACIÓN EN CONSOLA
+        console.log("== DEBUG FLASH ==");
+        console.log("Mensaje guardado en sesión:", req.session.flash);
+        
+        res.redirect(`/organization/${organizationId}`);
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).send('Error');
+    }
 };
