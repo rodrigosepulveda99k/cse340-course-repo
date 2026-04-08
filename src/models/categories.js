@@ -45,3 +45,18 @@ export const updateCategory = async (category_id, category_name) => {
         throw error;
     }
 };
+
+export const getProjectsByCategory = async (categoryId) => {
+    const sql = `
+        SELECT p.* FROM project p
+        JOIN project_category pc ON p.project_id = pc.project_id
+        WHERE pc.category_id = $1
+        ORDER BY p.project_name ASC`;
+    try {
+        const result = await pool.query(sql, [categoryId]);
+        return result.rows;
+    } catch (error) {
+        console.error('Error fetching projects by category:', error);
+        throw error;
+    }
+};
