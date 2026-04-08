@@ -17,15 +17,16 @@
                 </ul>
             </nav>
             <section class="messages">
-                <% const messages = flash(); %>
-                <% Object.keys(messages).forEach(type => { %>
-                    <% if (messages[type].length > 0) { %>
-                        <div class="alert <%= type %>">
-                            <% messages[type].forEach(msg => { %>
-                                <p><%= msg %></p>
-                            <% }); %>
-                        </div>
-                    <% } %>
-                <% }); %>
+                <% if (locals.messages) { %>
+                    <% Object.keys(messages).forEach(type => { %>
+                        <% if (messages[type] && messages[type].length > 0) { %>
+                            <div class="alert <%= type %>">
+                                <% messages[type].forEach(msg => { %>
+                                    <p><%= msg %></p>
+                                <% }); %>
+                            </div>
+                        <% } %>
+                    <% }); %>
+                <% } %>
             </section>
         </header>

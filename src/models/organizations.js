@@ -80,14 +80,18 @@ export const processNewOrganizationForm = async (req, res) => {
         
         // 1. Guardamos el mensaje
         req.flash('success', 'Organization added successfully!');
-        
-        // 2. VERIFICACIÓN EN CONSOLA
-        console.log("== DEBUG FLASH ==");
-        console.log("Mensaje guardado en sesión:", req.session.flash);
-        
-        res.redirect(`/organization/${organizationId}`);
+
+        // 2. FORZAMOS el guardado de la sesión antes de redirigir
+        req.session.save((err) => {
+            if (err) {
+                console.error("Error salvando sesión:", err);
+            }
+            res.redirect(`/organization/${organizationId}`);
+        });
+
     } catch (error) {
         console.error('Error:', error);
-        res.status(500).send('Error');
+        req.flash('error', 'Error creating organization');
+        res.redirect('/new-organization');
     }
 };
