@@ -26,8 +26,8 @@ router.post('/assign-categories/:projectId', processAssignCategoriesForm);
 
 // --- NUEVO: Rutas de Organizaciones ---
 // GET: Muestra el formulario
-router.get('/new-organization', orgController.showNewOrganizationForm);
+//router.get('/new-organization', orgController.showNewOrganizationForm);
 // POST: Procesa el envío y guarda en la DB
-router.post('/new-organization', orgController.processNewOrganizationForm);
+//router.post('/new-organization', orgController.processNewOrganizationForm);
 
 export default router;

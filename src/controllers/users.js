@@ -1,27 +1,22 @@
 import bcrypt from 'bcrypt';
 import { createUser, authenticateUser, getAllUsers } from '../models/users.js';
 
-/* --- MIDDLEWARES DE PROTECCIÓN Y AUTORIZACIÓN --- */
+/* --- MIDDLEWARES --- */
 
-// Verifica si el usuario está logueado
 export const requireLogin = (req, res, next) => {
     if (!req.session || !req.session.user) {
-        if (req.flash) req.flash('error', 'You must be logged in to access that page.');
-        return res.redirect('/login');
+        req.flash('error', 'You must be logged in to access that page.');
+        // Forzamos el guardado de la sesión antes de redirigir
+        return req.session.save(() => res.redirect('/login'));
     }
     next();
 };
 
-/**
- * Requerimiento de la Tarea: Restringir acceso solo a Admins.
- * Verifica que el usuario tenga el rol de administrador.
- */
 export const requireAdmin = (req, res, next) => {
     const user = req.session.user;
-    // Comprobamos si el rol es 'admin' o si el ID de rol corresponde al administrador (ej. 1)
-    if (!user || (user.role_name !== 'admin' && user.role_id !== 1)) {
-        if (req.flash) req.flash('error', 'Access denied. Administrator permissions required.');
-        return res.redirect('/dashboard');
+    if (!user || user.role_name !== 'Admin') {
+        req.flash('error', 'Access denied. Administrator permissions required.');
+        return req.session.save(() => res.redirect('/dashboard'));
     }
     next();
 };
@@ -37,16 +32,27 @@ export const processUserRegistrationForm = async (req, res) => {
     try {
         const salt = await bcrypt.genSalt(10);
         const passwordHash = await bcrypt.hash(password, salt);
-        await createUser(name, email, passwordHash);
-        if (req.flash) req.flash('success', 'Registration successful! Please log in.');
-        res.redirect('/login');
+        
+        // --- LÓGICA PARA EL APELLIDO ---
+        // Limpiamos espacios y dividimos el nombre completo
+        const nameParts = name.trim().split(/\s+/); 
+        const firstName = nameParts[0]; // El primer nombre
+        
+        // Si puso más de una palabra, el resto es el apellido. 
+        // Si puso solo una, mandamos "None" o un punto para cumplir con el NOT NULL.
+        const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : 'None';
+
+        // Enviamos los 4 parámetros al modelo corregido
+        await createUser(firstName, email, passwordHash, lastName);
+        
+        req.flash('success', 'Registration successful! Please log in.');
+        req.session.save(() => res.redirect('/login'));
     } catch (error) {
         console.error('Error registering user:', error);
-        if (req.flash) req.flash('error', 'An error occurred during registration.');
-        res.redirect('/register');
+        req.flash('error', 'An error occurred during registration.');
+        req.session.save(() => res.redirect('/register'));
     }
 };
-
 /* --- LOGIN --- */
 
 export const showLoginForm = (req, res) => {
@@ -59,23 +65,22 @@ export const processLoginForm = async (req, res) => {
         const user = await authenticateUser(email, password);
         if (user) {
             req.session.user = user;
-            if (req.flash) req.flash('success', 'Login successful!');
-            res.redirect('/dashboard');
+            req.flash('success', 'Login successful!');
+            req.session.save(() => res.redirect('/dashboard'));
         } else {
-            if (req.flash) req.flash('error', 'Invalid email or password.');
-            res.redirect('/login');
+            req.flash('error', 'Invalid email or password.');
+            req.session.save(() => res.redirect('/login'));
         }
     } catch (error) {
         console.error('Error during login:', error);
-        res.redirect('/login');
+        req.flash('error', 'Connection error during login.');
+        req.session.save(() => res.redirect('/login'));
     }
 };
 
 /* --- DASHBOARD --- */
 
 export const showDashboard = (req, res) => {
-    // Pasamos el objeto user completo para que la vista dashboard.ejs 
-    // pueda decidir si mostrar el link de "Admin" o no.
     const user = req.session.user;
     res.render('dashboard', { 
         title: 'User Dashboard',
@@ -87,9 +92,6 @@ export const showDashboard = (req, res) => {
 
 /* --- LISTADO DE USUARIOS (ADMIN ONLY) --- */
 
-/**
- * Requerimiento de la Tarea: Obtener todos los usuarios y mostrarlos.
- */
 export const showUserList = async (req, res) => {
     try {
         const users = await getAllUsers();
@@ -99,8 +101,8 @@ export const showUserList = async (req, res) => {
         });
     } catch (error) {
         console.error('Error fetching users:', error);
-        if (req.flash) req.flash('error', 'Could not retrieve user list.');
-        res.redirect('/dashboard');
+        req.flash('error', 'Could not retrieve user list.');
+        req.session.save(() => res.redirect('/dashboard'));
     }
 };
 

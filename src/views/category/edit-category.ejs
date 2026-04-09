@@ -1,21 +1,32 @@
-<% if (locals.errors) { %>
-  <ul class="error-messages">
-    <% errors.forEach(error => { %>
-      <li><%= error.msg %></li>
-    <% }) %>
-  </ul>
-<% } %>
+<%- include('../partials/header') %>
 
-<form action="/edit-category/<%= category.category_id %>" method="POST">
-  <label for="category_name">Nombre de la Categoría:</label>
-  <input type="text" 
-         id="category_name" 
-         name="category_name" 
-         value="<%= locals.category_name || category.category_name %>" 
-         required 
-         maxlength="100">
-         
-  <input type="hidden" name="category_id" value="<%= category.category_id %>">
-  
-  <button type="submit">Actualizar Categoría</button>
-</form>
+<main class="form-container">
+    <h1>Edit Category</h1>
+
+    <% if (locals.errors) { %>
+      <ul class="error-messages">
+        <% errors.forEach(error => { %>
+          <li><%= error.msg %></li>
+        <% }) %>
+      </ul>
+    <% } %>
+
+    <form action="/edit-category/<%= category.category_id %>" method="POST" class="site-form">
+      <div class="form-group">
+          <label for="category_name">Category Name:</label>
+          <input type="text" 
+                 id="category_name" 
+                 name="category_name" 
+                 value="<%= locals.category_name || category.category_name %>" 
+                 required 
+                 maxlength="100">
+      </div>
+                 
+      <input type="hidden" name="category_id" value="<%= category.category_id %>">
+      
+      <button type="submit" class="btn-primary">Update Category</button>
+      <a href="/categories" class="btn-secondary">Cancel</a>
+    </form>
+</main>
+
+<%- include('../partials/footer') %>

@@ -2,7 +2,8 @@ import { pool } from './db.js';
 
 export const getAllProjects = async () => {
     try {
-        const sql = 'SELECT * FROM project ORDER BY project_name ASC';
+        // CORRECCIÓN: Usamos 'title' y no 'project_name'
+        const sql = 'SELECT * FROM project ORDER BY title ASC';
         const result = await pool.query(sql);
 
         console.log(`Executed query: { text: '${sql}', rows: ${result.rowCount} }`);
@@ -13,12 +14,13 @@ export const getAllProjects = async () => {
     }
 };
 
+// BUSCÁ ESTA FUNCIÓN EN TU MODELO
 export const getUpcomingProjects = async (number_of_projects) => {
     try {
         const sql = `
             SELECT 
                 p.project_id, 
-                p.project_name AS title, 
+                p.title,        -- CAMBIÁ p.project_name AS title POR p.title
                 p.description, 
                 p.date, 
                 p.location, 
@@ -31,7 +33,6 @@ export const getUpcomingProjects = async (number_of_projects) => {
             LIMIT $1`;
 
         const result = await pool.query(sql, [number_of_projects]);
-        console.log(`Executed getUpcomingProjects: { rows: ${result.rowCount} }`);
         return result.rows;
     } catch (error) {
         console.error('Error in getUpcomingProjects model:', error);
@@ -44,7 +45,7 @@ export const getProjectDetails = async (id) => {
         const sql = `
             SELECT 
                 p.project_id, 
-                p.project_name AS title, 
+                p.title, 
                 p.description, 
                 p.date, 
                 p.location, 
@@ -62,16 +63,14 @@ export const getProjectDetails = async (id) => {
     }
 };
 
-// Esta es la función clave para que la página de Categorías no esté "rota"
 export const getProjectsByCategory = async (categoryId) => {
     try {
         const sql = `
             SELECT p.* FROM project p
             JOIN project_category pc ON p.project_id = pc.project_id
             WHERE pc.category_id = $1
-            ORDER BY p.project_name ASC`;
+            ORDER BY p.title ASC`; // CORRECCIÓN: title
         const result = await pool.query(sql, [categoryId]);
-        console.log(`Executed getProjectsByCategory: { rows: ${result.rowCount} }`);
         return result.rows;
     } catch (error) {
         console.error('Error in getProjectsByCategory model:', error);
@@ -80,6 +79,7 @@ export const getProjectsByCategory = async (categoryId) => {
 };
 
 export const createProject = async (title, description, location, date, organizationId) => {
+    // Aquí el INSERT ya estaba bien porque usaba 'title'
     const query = `
       INSERT INTO project (title, description, location, date, organization_id)
       VALUES ($1, $2, $3, $4, $5)

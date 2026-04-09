@@ -2,16 +2,17 @@ import { pool as db } from './db.js';
 import bcrypt from 'bcrypt';
 
 /**
- * Inserta un nuevo usuario en la base de datos asignándole el rol 'user' por defecto.
+ * Inserta un nuevo usuario usando los nombres de columna reales detectados en la DB.
  */
-export const createUser = async (name, email, passwordHash) => {
-    const default_role = 'user';
+export const createUser = async (name, email, passwordHash, lastname = 'Not Provided') => {
+    const default_role = 'Client'; 
     const query = `
-        INSERT INTO users (name, email, password_hash, role_id) 
-        VALUES ($1, $2, $3, (SELECT role_id FROM roles WHERE role_name = $4)) 
-        RETURNING user_id
+        INSERT INTO users (name, email, account_lastname, password_hash, role_name) 
+        VALUES ($1, $2, $3, $4, $5) 
+        RETURNING account_id
     `;
-    const query_params = [name, email, passwordHash, default_role];
+    // Mapeo: $1:name, $2:email, $3:lastname, $4:passwordHash, $5:default_role
+    const query_params = [name, email, lastname, passwordHash, default_role];
     
     const result = await db.query(query, query_params);
 
@@ -19,19 +20,17 @@ export const createUser = async (name, email, passwordHash) => {
         throw new Error('Failed to create user');
     }
 
-    return result.rows[0].user_id;
+    return result.rows[0].account_id;
 };
 
 /**
- * Busca un usuario por su email incluyendo el nombre del rol.
- * Se actualizó con un JOIN para obtener role_name, necesario para la autorización.
+ * Busca un usuario por email para el proceso de Login.
  */
-const findUserByEmail = async (email) => {
+export const findUserByEmail = async (email) => {
     const query = `
-        SELECT u.user_id, u.name, u.email, u.password_hash, u.role_id, r.role_name 
-        FROM users u
-        JOIN roles r ON u.role_id = r.role_id
-        WHERE u.email = $1
+        SELECT account_id, name, account_lastname, email, password_hash, role_name 
+        FROM users 
+        WHERE email = $1
     `;
     const result = await db.query(query, [email]);
 
@@ -43,14 +42,14 @@ const findUserByEmail = async (email) => {
 };
 
 /**
- * Compara la contraseña en texto plano con el hash almacenado.
+ * Compara la contraseña usando password_hash de la DB.
  */
 const verifyPassword = async (password, passwordHash) => {
     return await bcrypt.compare(password, passwordHash);
 };
 
 /**
- * Autentica al usuario y devuelve sus datos (incluyendo role_name y sin el hash).
+ * Autentica al usuario y devuelve el objeto para la sesión (sin el hash).
  */
 export const authenticateUser = async (email, password) => {
     const user = await findUserByEmail(email);
@@ -62,7 +61,7 @@ export const authenticateUser = async (email, password) => {
     const isPasswordCorrect = await verifyPassword(password, user.password_hash);
 
     if (isPasswordCorrect) {
-        // Extraemos password_hash para no enviarlo a la sesión por seguridad
+        // Extraemos password_hash por seguridad para no guardarlo en la cookie de sesión
         const { password_hash, ...userWithoutHash } = user;
         return userWithoutHash;
     }
@@ -71,15 +70,13 @@ export const authenticateUser = async (email, password) => {
 };
 
 /**
- * Obtiene la lista de todos los usuarios registrados con sus respectivos roles.
- * REQUERIMIENTO DEL ASSIGNMENT: Solo para uso del Administrador.
+ * Obtiene todos los usuarios (Requerimiento para vista de Admin).
  */
 export const getAllUsers = async () => {
     const query = `
-        SELECT u.user_id, u.name, u.email, r.role_name 
-        FROM users u
-        JOIN roles r ON u.role_id = r.role_id
-        ORDER BY u.name ASC
+        SELECT account_id, name, account_lastname, email, role_name 
+        FROM users 
+        ORDER BY name ASC
     `;
     const result = await db.query(query);
     return result.rows;

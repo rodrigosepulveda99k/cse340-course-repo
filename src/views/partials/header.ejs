@@ -28,16 +28,19 @@
         </nav>
 
         <section class="messages">
-            <% if (locals.messages) { %>
-                <% Object.keys(messages).forEach(type => { %>
-                    <% if (messages[type] && messages[type].length > 0) { %>
-                        <div class="alert <%= type %>">
-                            <% messages[type].forEach(msg => { %>
-                                <p><%= msg %></p>
-                            <% }); %>
-                        </div>
-                    <% } %>
-                <% }); %>
-            <% } %>
+            <% 
+                // Usamos la función del middleware para obtener y limpiar mensajes
+                const allMessages = typeof getMessages === 'function' ? getMessages() : (locals.messages || {}); 
+            %>
+            
+            <% Object.keys(allMessages).forEach(type => { %>
+                <% if (Array.isArray(allMessages[type]) && allMessages[type].length > 0) { %>
+                    <div class="alert alert-<%= type %>">
+                        <% allMessages[type].forEach(msg => { %>
+                            <p><%= msg %></p>
+                        <% }); %>
+                    </div>
+                <% } %>
+            <% }); %>
         </section>
     </header>

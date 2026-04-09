@@ -37,18 +37,20 @@ app.set('views', path.join(__dirname, 'src/views'));
 
 // 5. MIDDLEWARE DE LOGS Y VARIABLES LOCALES (UNIFICADO)
 app.use((req, res, next) => {
-    // Log de peticiones en desarrollo
-    if (nodeEnv === 'development') {
-        console.log(`${req.method} ${req.url}`);
-    }
-
     // --- VARIABLES PARA LAS VISTAS ---
-    res.locals.isLoggedIn = false;
-    res.locals.user = null;
+    res.locals.isLoggedIn = !!(req.session && req.session.user);
+    res.locals.user = req.session.user || null;
 
-    if (req.session && req.session.user) {
-        res.locals.isLoggedIn = true;
-        res.locals.user = req.session.user; 
+    // --- CONSUMIR MENSAJES FLASH ---
+    // Si usas express-flash (la librería estándar):
+    // res.locals.messages = req.flash(); 
+
+    // Si es tu middleware personalizado, asegúrate de que esto los limpie:
+    if (req.session.flash) {
+        res.locals.messages = req.session.flash;
+        delete req.session.flash; // ESTA LÍNEA ES LA QUE EVITA QUE SE ACUMULEN
+    } else {
+        res.locals.messages = {};
     }
 
     res.locals.NODE_ENV = nodeEnv;

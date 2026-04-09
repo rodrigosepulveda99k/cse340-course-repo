@@ -34,20 +34,22 @@ import {
     projectValidation 
 } from './projects.js';
 
-
 const router = Router();
 
-router.get('/', async (req, res) => {
+// --- Rutas Públicas e Inicio ---
+// Eliminé la duplicidad de la ruta raíz. Dejamos solo una.
+router.get('/', (req, res) => {
     res.render('home', { title: 'Home' });
 });
 
 // --- Rutas de Organizaciones ---
 router.get('/organizations', showOrganizationsPage);
 router.get('/organization/:id', showOrganizationDetailsPage);
-router.get('/new-organization', showNewOrganizationForm); 
-router.post('/new-organization', organizationValidation, processNewOrganizationForm); 
-router.get('/edit-organization/:id', showEditOrganizationForm);
-router.post('/edit-organization/:id', organizationValidation, processEditOrganizationForm);
+// Solo permitimos crear/editar si está logueado (Opcional, pero recomendado por seguridad)
+router.get('/new-organization', requireLogin, showNewOrganizationForm); 
+router.post('/new-organization', requireLogin, organizationValidation, processNewOrganizationForm); 
+router.get('/edit-organization/:id', requireLogin, showEditOrganizationForm);
+router.post('/edit-organization/:id', requireLogin, organizationValidation, processEditOrganizationForm);
 
 // --- Rutas de Categorías ---
 router.get('/categories', showCategoriesPage);
@@ -56,22 +58,20 @@ router.use('/', categoryRoutes);
 // --- Rutas de Proyectos ---
 router.get('/projects', showProjectsPage);
 router.get('/project/:id', showProjectDetailsPage);
-router.get('/new-project', showNewProjectForm);
-router.post('/new-project', projectValidation, processNewProjectForm);
+router.get('/new-project', requireLogin, showNewProjectForm);
+router.post('/new-project', requireLogin, projectValidation, processNewProjectForm);
 
-// --- Rutas Públicas ---
-router.get('/', (req, res) => {
-    res.render('index', { title: 'Home' });
-});
-
-// --- Rutas de Registro ---
+// --- Rutas de Autenticación ---
 router.get('/register', showUserRegistrationForm);
 router.post('/register', processUserRegistrationForm);
 router.get('/login', showLoginForm);
 router.post('/login', processLoginForm);
 router.get('/logout', processLogout);
 
+// --- Rutas Protegidas ---
 router.get('/dashboard', requireLogin, showDashboard);
+
+// Chequeo de QA: requireAdmin aplicado correctamente aquí
 router.get('/users', requireLogin, requireAdmin, showUserList);
 
 export default router;

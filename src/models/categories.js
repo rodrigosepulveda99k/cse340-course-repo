@@ -51,7 +51,7 @@ export const getProjectsByCategory = async (categoryId) => {
         SELECT p.* FROM project p
         JOIN project_category pc ON p.project_id = pc.project_id
         WHERE pc.category_id = $1
-        ORDER BY p.project_name ASC`;
+        ORDER BY p.title ASC`;
     try {
         const result = await pool.query(sql, [categoryId]);
         return result.rows;
@@ -82,3 +82,15 @@ export const updateCategoryAssignments = async (projectId, categoryIds) => {
         await assignCategoryToProject(categoryId, projectId);
     }
 };
+
+export const processNewOrganizationForm = async (req, res) => {
+    // Si el campo viene vacío del form, le asignamos el default aquí
+    const { name, description, contactEmail } = req.body;
+    const logoFilename = req.body.logoFilename || 'placeholder-logo.png'; 
+
+    try {
+        // ... resto del código para insertar en la DB
+    } catch (error) {
+        // ...
+    }
+}

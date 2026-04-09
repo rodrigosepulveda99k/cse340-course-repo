@@ -1,9 +1,8 @@
 import * as orgModel from '../models/organizations.js';
-import { body, validationResult } from 'express-validator';
+import { body, validationResult } from 'express-validator'; // 'body' se importa de aquí
 
 /* --- CONTROLADORES DE VISTA --- */
 
-// Muestra la lista de todas las organizaciones
 export const showOrganizationsPage = async (req, res) => {
     try {
         const organizations = await orgModel.getAllOrganizations();
@@ -17,13 +16,15 @@ export const showOrganizationsPage = async (req, res) => {
     }
 };
 
-// Muestra el detalle de una organización específica
 export const showOrganizationDetailsPage = async (req, res) => {
     try {
         const id = req.params.id;
         const organization = await orgModel.getOrganizationById(id);
 
-        if (!organization) return res.status(404).send('Organization not found');
+        if (!organization) {
+            req.flash('error', 'Organization not found');
+            return req.session.save(() => res.redirect('/organizations'));
+        }
 
         res.render('organization-details', {
             title: organization.name,
@@ -35,12 +36,10 @@ export const showOrganizationDetailsPage = async (req, res) => {
     }
 };
 
-// Muestra el formulario para crear una nueva organización
-export const showNewOrganizationForm = async (req, res) => {
+export const showNewOrganizationForm = (req, res) => {
     res.render('new-organization', { title: 'Add New Organization' });
 };
 
-// Muestra el formulario para editar una organización existente
 export const showEditOrganizationForm = async (req, res) => {
     try {
         const organizationId = req.params.id;
@@ -51,7 +50,6 @@ export const showEditOrganizationForm = async (req, res) => {
             return req.session.save(() => res.redirect('/organizations'));
         }
 
-        // Renderizado directo desde la raíz de views según tu VS Code
         res.render('edit-organization', { 
             title: 'Edit Organization', 
             organizationDetails 
@@ -62,9 +60,8 @@ export const showEditOrganizationForm = async (req, res) => {
     }
 };
 
-/* --- PROCESAMIENTO DE FORMULARIOS --- */
+/* --- PROCESAMIENTO --- */
 
-// Procesa la creación de una nueva organización
 export const processNewOrganizationForm = async (req, res) => {
     const results = validationResult(req);
     if (!results.isEmpty()) {
@@ -74,32 +71,33 @@ export const processNewOrganizationForm = async (req, res) => {
 
     try {
         const { name, description, contactEmail } = req.body;
-        const logoFilename = 'placeholder-logo.png';
+        const logo_filename = req.body.logoFilename || 'placeholder-logo.png';
 
-        const organizationId = await orgModel.createOrganization(name, description, contactEmail, logoFilename);
+        const organizationId = await orgModel.createOrganization(name, description, contactEmail, logo_filename);
         
         req.flash('success', 'Organization added successfully!');
         req.session.save(() => res.redirect(`/organization/${organizationId}`));
     } catch (error) {
+        console.error('Error in processNewOrganizationForm:', error);
         req.flash('error', 'Failed to create organization.');
         req.session.save(() => res.redirect('/new-organization'));
     }
 };
 
-// Procesa la actualización de una organización existente
 export const processEditOrganizationForm = async (req, res) => {
     const organizationId = req.params.id;
-    
     const results = validationResult(req);
+    
     if (!results.isEmpty()) {
         results.array().forEach((error) => req.flash('error', error.msg));
         return req.session.save(() => res.redirect(`/edit-organization/${organizationId}`));
     }
 
     try {
-        const { name, description, contactEmail, logoFilename } = req.body;
+        const { name, description, contactEmail } = req.body;
+        const logo_filename = req.body.logoFilename || 'placeholder-logo.png';
         
-        await orgModel.updateOrganization(organizationId, name, description, contactEmail, logoFilename);
+        await orgModel.updateOrganization(organizationId, name, description, contactEmail, logo_filename);
         
         req.flash('success', 'Organization updated successfully!');
         req.session.save(() => res.redirect(`/organization/${organizationId}`));
@@ -110,10 +108,10 @@ export const processEditOrganizationForm = async (req, res) => {
     }
 };
 
-/* --- VALIDACIONES --- */
+/* --- VALIDACIONES CORREGIDAS --- */
 
 export const organizationValidation = [
-    body('name')
+    body('name') // Eliminado el prefijo orgModel.
         .trim()
         .notEmpty().withMessage('Organization name is required')
         .isLength({ min: 3, max: 150 }).withMessage('Name must be 3-150 characters'),
@@ -125,6 +123,6 @@ export const organizationValidation = [
         .normalizeEmail()
         .isEmail().withMessage('Please provide a valid email address'),
     body('logoFilename')
+        .optional({ checkFalsy: true })
         .trim()
-        .notEmpty().withMessage('Logo filename is required')
 ];

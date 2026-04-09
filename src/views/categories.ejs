@@ -5,6 +5,10 @@
     
     <section class="category-grid">
         <p class="intro-text">Browse our projects by category:</p>
+
+        <div class="actions-bar" style="margin-bottom: 20px;">
+            <a href="/new-category" class="btn-primary">Add New Category</a>
+        </div>
         
         <ul class="category-list">
             <% categories.forEach(category => { %>
@@ -15,7 +19,7 @@
                                 <%= category.category_name %>
                             </a>
                         </strong>
-                    </div>
+                        </div>
                 </li>
             <% }); %>
         </ul>

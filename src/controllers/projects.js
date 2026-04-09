@@ -1,7 +1,7 @@
 import * as projectModel from '../models/projects.js';
 import * as catModel from '../models/categories.js';
 import { getAllOrganizations } from '../models/organizations.js';
-import { body, validationResult } from 'express-validator';
+import { body, validationResult } from 'express-validator'; // IMPORTANTE: Agregado 'body' aquí
 
 const NUMBER_OF_UPCOMING_PROJECTS = 5;
 
@@ -32,7 +32,7 @@ export const showProjectDetailsPage = async (req, res) => {
         const categories = await catModel.getCategoriesByProject(id);
 
         res.render('project', {
-            title: project.title,
+            title: project.title, 
             project,
             categories
         });
@@ -42,7 +42,7 @@ export const showProjectDetailsPage = async (req, res) => {
     }
 };
 
-/* --- NUEVA FUNCIONALIDAD: FORMULARIO DE PROYECTOS --- */
+/* --- FORMULARIO DE PROYECTOS --- */
 
 export const showNewProjectForm = async (req, res) => {
     try {
@@ -52,11 +52,13 @@ export const showNewProjectForm = async (req, res) => {
             organizations 
         });
     } catch (error) {
+        console.error('Error loading form:', error);
         res.status(500).send("Error loading organizations for the form");
     }
 };
 
-// Reglas de Validación para Proyectos
+/* --- VALIDACIONES (EXPORTADAS PARA ROUTES.JS) --- */
+
 export const projectValidation = [
     body('title')
         .trim()
@@ -78,15 +80,15 @@ export const projectValidation = [
         .isInt().withMessage('Organization must be a valid integer')
 ];
 
+/* --- PROCESAMIENTO CON VALIDACIÓN Y FLASH --- */
+
 export const processNewProjectForm = async (req, res) => {
-    // Check for validation errors
     const errors = validationResult(req);
+    
     if (!errors.isEmpty()) {
         errors.array().forEach((error) => {
             req.flash('error', error.msg);
         });
-
-        // Usamos req.session.save para garantizar que el flash llegue a la vista
         return req.session.save(() => res.redirect('/new-project'));
     }
 
