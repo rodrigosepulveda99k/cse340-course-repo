@@ -1,5 +1,6 @@
 import { pool as db } from './db.js';
 import bcrypt from 'bcrypt';
+import * as volunteerModel from '../models/volunteers.js';
 
 /**
  * Inserta un nuevo usuario usando los nombres de columna reales detectados en la DB.
@@ -81,3 +82,20 @@ export const getAllUsers = async () => {
     const result = await db.query(query);
     return result.rows;
 };
+
+export async function showDashboard(req, res) {
+    try {
+        const userId = req.session.user.account_id;
+        // Obtenemos la lista de proyectos del modelo de voluntarios
+        const volunteerProjects = await volunteerModel.getProjectsByUser(userId);
+
+        res.render('user/dashboard', { // Ajusta la ruta si tu dashboard está en otra carpeta
+            title: 'Dashboard',
+            user: req.session.user,
+            volunteerProjects // Pasamos los proyectos a la vista
+        });
+    } catch (error) {
+        console.error("Error en dashboard:", error);
+        res.status(500).send("Error al cargar el dashboard");
+    }
+}

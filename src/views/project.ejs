@@ -14,8 +14,30 @@
             </a>
         </p>
 
-        <% if (locals.categories && categories.length > 0) { %>
-            <div class="project-categories">
+        <% if (locals.user) { %>
+            <div class="volunteer-actions" style="margin-top: 20px; padding: 15px; background: #f4f4f4; border-radius: 8px; border: 1px solid #ddd;">
+                <% if (isVolunteering) { %>
+                    <p style="color: #2e7d32;"><strong>✅ You are volunteering for this project!</strong></p>
+                    <a href="/volunteer/remove/<%= project.project_id %>" class="btn-delete" style="color: #d32f2f; text-decoration: underline;">
+                        Remove me as Volunteer
+                    </a>
+                <% } else { %>
+                    <p>Help this cause:</p>
+                    <a href="/volunteer/add/<%= project.project_id %>" class="btn-primary" style="background: #007bff; color: white; padding: 10px 15px; border-radius: 5px; text-decoration: none; display: inline-block;">
+                        Volunteer for this project
+                    </a>
+                <% } %>
+            </div>
+        <% } else { %>
+            <div style="margin-top: 20px; padding: 10px; border: 1px dashed #ccc;">
+                <p>Please <a href="/account/login">login</a> to join this project as a volunteer.</p>
+            </div>
+        <% } %>
+        
+        <hr style="margin: 30px 0;">
+
+        <div class="project-categories">
+            <% if (locals.categories && categories.length > 0) { %>
                 <h2>Categories</h2>
                 <ul class="tags-list">
                     <% categories.forEach(category => { %>
@@ -26,22 +48,14 @@
                         </li>
                     <% }); %>
                 </ul>
-                
-                <p class="action-link">
-                    <a href="/assign-categories/<%= project.project_id %>" class="btn-edit">
-                        Edit Categories
-                    </a>
-                </p>
-            </div>
-        <% } else { %>
-            <div class="project-categories">
-                <p class="action-link">
-                    <a href="/assign-categories/<%= project.project_id %>" class="btn-edit">
-                        Add Categories to Project
-                    </a>
-                </p>
-            </div>
-        <% } %>
+            <% } %>
+            
+            <p class="action-link">
+                <a href="/assign-categories/<%= project.project_id %>" class="btn-edit">
+                    <%= (locals.categories && categories.length > 0) ? 'Edit Categories' : 'Add Categories to Project' %>
+                </a>
+            </p>
+        </div>
     </section>
 </main>
 

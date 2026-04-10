@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import categoryRoutes from '../routes/categoryRoute.js';
 import { showCategoriesPage } from './categories.js';
+import { handleAddVolunteer, handleRemoveVolunteer } from './volunteers.js';
 
 import { 
     showUserRegistrationForm, 
@@ -14,7 +15,6 @@ import {
     showUserList 
 } from './users.js';
 
-// Organizaciones
 import { 
     showOrganizationsPage, 
     showOrganizationDetailsPage, 
@@ -22,56 +22,55 @@ import {
     processNewOrganizationForm,
     showEditOrganizationForm,      
     processEditOrganizationForm,   
-    organizationValidation         
+    organizationValidation          
 } from './organizations.js';
 
-// Proyectos
 import { 
     showProjectsPage, 
     showProjectDetailsPage, 
     showNewProjectForm, 
     processNewProjectForm, 
-    projectValidation 
+    projectValidation // <--- Debe llamarse igual que en projects.js
 } from './projects.js';
 
 const router = Router();
 
-// --- Rutas Públicas e Inicio ---
-// Eliminé la duplicidad de la ruta raíz. Dejamos solo una.
-router.get('/', (req, res) => {
-    res.render('home', { title: 'Home' });
-});
+// 1. RUTAS DE AUTENTICACIÓN (Prioridad alta)
+router.get('/login', showLoginForm);
+router.post('/login', processLoginForm);
+router.get('/logout', processLogout);
+router.get('/register', showUserRegistrationForm);
+router.post('/register', processUserRegistrationForm);
 
-// --- Rutas de Organizaciones ---
+// 2. RUTAS DE VOLUNTARIADO (Específicas - Deben ir arriba)
+router.get('/volunteer/add/:projectId', requireLogin, handleAddVolunteer);
+router.get('/volunteer/remove/:projectId', requireLogin, handleRemoveVolunteer);
+
+// 3. RUTAS DE PROYECTOS
+router.get('/projects', showProjectsPage);
+router.get('/project/:id', showProjectDetailsPage); // :id es genérico, pero va después de /add
+router.get('/new-project', requireLogin, showNewProjectForm);
+router.post('/new-project', requireLogin, projectValidation, processNewProjectForm);
+
+// 4. RUTAS DE ORGANIZACIONES
 router.get('/organizations', showOrganizationsPage);
 router.get('/organization/:id', showOrganizationDetailsPage);
-// Solo permitimos crear/editar si está logueado (Opcional, pero recomendado por seguridad)
 router.get('/new-organization', requireLogin, showNewOrganizationForm); 
 router.post('/new-organization', requireLogin, organizationValidation, processNewOrganizationForm); 
 router.get('/edit-organization/:id', requireLogin, showEditOrganizationForm);
 router.post('/edit-organization/:id', requireLogin, organizationValidation, processEditOrganizationForm);
 
-// --- Rutas de Categorías ---
+// 5. RUTAS DE USUARIO Y DASHBOARD
+router.get('/dashboard', requireLogin, showDashboard);
+router.get('/users', requireLogin, requireAdmin, showUserList);
+
+// 6. INICIO
+router.get('/', (req, res) => {
+    res.render('home', { title: 'Home' });
+});
+
+// 7. RUTAS DE CATEGORÍAS (Al final para no interferir)
 router.get('/categories', showCategoriesPage);
 router.use('/', categoryRoutes); 
-
-// --- Rutas de Proyectos ---
-router.get('/projects', showProjectsPage);
-router.get('/project/:id', showProjectDetailsPage);
-router.get('/new-project', requireLogin, showNewProjectForm);
-router.post('/new-project', requireLogin, projectValidation, processNewProjectForm);
-
-// --- Rutas de Autenticación ---
-router.get('/register', showUserRegistrationForm);
-router.post('/register', processUserRegistrationForm);
-router.get('/login', showLoginForm);
-router.post('/login', processLoginForm);
-router.get('/logout', processLogout);
-
-// --- Rutas Protegidas ---
-router.get('/dashboard', requireLogin, showDashboard);
-
-// Chequeo de QA: requireAdmin aplicado correctamente aquí
-router.get('/users', requireLogin, requireAdmin, showUserList);
 
 export default router;
