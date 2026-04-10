@@ -1,7 +1,7 @@
 <%- include('partials/header') %>
 
 <main class="container">
-    <h1><%= projectDetails.title %></h1>
+    <h1><%= projectDetails ? projectDetails.title : 'Project' %></h1>
     <h2>Assign Categories</h2>
 
     <form action="/assign-categories/<%= projectId %>" method="POST" class="form-card">
@@ -9,21 +9,27 @@
         <div class="form-group">
             <p>Select categories for this project:</p>
             
-            <% categories.forEach(category => { %>
-                <div class="checkbox-group">
-                    <input
-                        type="checkbox"
-                        id="category-<%= category.category_id %>"
-                        name="categoryIds" 
-                        value="<%= category.category_id %>"
-                        <%# Lógica para marcar los ya asignados %>
-                        <%= assignedCategories.some(ac => ac.category_id === category.category_id) ? 'checked' : '' %>
-                    />
-                    <label for="category-<%= category.category_id %>">
-                        <%= category.category_name %>
-                    </label>
-                </div>
-            <% }); %>
+            <% if (categories && categories.length > 0) { %>
+                <% categories.forEach(category => { %>
+                    <div class="checkbox-group">
+                        <input
+                            type="checkbox"
+                            id="category-<%= category.category_id %>"
+                            name="categoryIds" 
+                            value="<%= category.category_id %>"
+                            <%# Comprobamos si la categoría ya está asignada %>
+                            <% if (locals.assignedCategories) { %>
+                                <%= assignedCategories.some(ac => ac.category_id === category.category_id) ? 'checked' : '' %>
+                            <% } %>
+                        />
+                        <label for="category-<%= category.category_id %>">
+                            <%= category.category_name %>
+                        </label>
+                    </div>
+                <% }); %>
+            <% } else { %>
+                <p>No categories available to assign.</p>
+            <% } %>
         </div>
 
         <div class="form-actions">

@@ -11,17 +11,21 @@
         </div>
         
         <ul class="category-list">
-            <% categories.forEach(category => { %>
-                <li class="category-card">    
-                    <div class="category-info">
-                        <strong>
-                            <a href="/category/<%= category.category_id %>">
-                                <%= category.category_name %>
-                            </a>
-                        </strong>
+            <% if (categories && categories.length > 0) { %>
+                <% categories.forEach(category => { %>
+                    <li class="category-card">    
+                        <div class="category-info">
+                            <strong>
+                                <a href="/category/<%= category.category_id %>">
+                                    <%= category.category_name %>
+                                </a>
+                            </strong>
                         </div>
-                </li>
-            <% }); %>
+                    </li>
+                <% }); %>
+            <% } else { %>
+                <p>No categories available at the moment.</p>
+            <% } %>
         </ul>
     </section>
 </main>

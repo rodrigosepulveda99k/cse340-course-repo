@@ -1,19 +1,31 @@
 <%- include('partials/header') %>
+
 <main>
+    <%# Usamos 'category' (singular) para el título %>
     <h1><%= category.category_name %> Projects</h1>
-    <div class="actions">
-    <a href="/project/<%= project.project_id %>">
-    <%= project.title || project.project_name %>
-    </a>
-    </div>
-    <ul class="project-list">
-        <% projects.forEach(project => { %>
-            <li>
-                <a href="/project/<%= project.project_id %>">
-                    <%= project.title %>
-                </a>
-            </li>
-        <% }); %>
-    </ul>
+    
+    <section class="project-grid">
+        <p class="intro-text">Projects in this category:</p>
+        
+        <ul class="project-list">
+            <%# IMPORTANTE: Aquí usamos 'projects', que es lo que envía el controlador %>
+            <% if (locals.projects && projects.length > 0) { %>
+                <% projects.forEach(project => { %>
+                    <li class="project-card">    
+                        <div class="project-info">
+                            <strong>
+                                <a href="/project/<%= project.project_id %>">
+                                    <%= project.project_name || project.title %>
+                                </a>
+                            </strong>
+                        </div>
+                    </li>
+                <% }); %>
+            <% } else { %>
+                <p>No projects found in this category.</p>
+            <% } %>
+        </ul>
+    </section>
 </main>
+
 <%- include('partials/footer') %>
