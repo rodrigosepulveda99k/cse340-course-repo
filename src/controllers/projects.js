@@ -1,107 +1,81 @@
 import * as projectModel from '../models/projects.js';
-import * as catModel from '../models/categories.js';
-import { getAllOrganizations } from '../models/organizations.js';
-import { body, validationResult } from 'express-validator'; // IMPORTANTE: Agregado 'body' aquí
+import * as organizationModel from '../models/organizations.js';
+// Importa aquí tu modelo de categorías si tienes uno, ej:
+// import * as categoryModel from '../models/categories.js';
 
-const NUMBER_OF_UPCOMING_PROJECTS = 5;
+import { body, validationResult } from 'express-validator';
 
-/* --- CONTROLADORES DE VISTA --- */
+export const projectValidation = [
+    body('title').trim().notEmpty().withMessage('Title is required.'),
+    body('organizationId').notEmpty().withMessage('Organization is required.')
+];
 
-export const showProjectsPage = async (req, res) => {
+export async function showProjectsPage(req, res) {
     try {
-        const projects = await projectModel.getUpcomingProjects(NUMBER_OF_UPCOMING_PROJECTS);
-        res.render('projects', {
-            title: 'Upcoming Service Projects',
-            projects
-        });
+        const projects = await projectModel.getAllProjects();
+        res.render('projects', { title: 'Upcoming Service Projects', projects });
     } catch (error) {
         console.error('Error in showProjectsPage:', error);
         res.status(500).send('Internal Server Error');
     }
-};
+}
 
-export const showProjectDetailsPage = async (req, res) => {
+export async function showProjectDetailsPage(req, res) {
     try {
-        const id = req.params.id;
-        const project = await projectModel.getProjectDetails(id);
-
+        const projectId = req.params.id;
+        const project = await projectModel.getProjectDetails(projectId);
+        
         if (!project) {
-            return res.status(404).render('404', { title: 'Project not found' });
+            return res.status(404).send('Project not found');
         }
 
-        const categories = await catModel.getCategoriesByProject(id);
-
-        res.render('project', {
+        // IMPORTANTE: Si tienes categorías, deberías traerlas aquí
+        // const categories = await projectModel.getCategoriesByProject(projectId);
+        
+        res.render('project-detail', { // Asegúrate que el nombre sea 'project-detail'
             title: project.title, 
             project,
-            categories
+            categories: [] // Enviamos array vacío para que el EJS no explote
         });
     } catch (error) {
         console.error('Error in showProjectDetailsPage:', error);
         res.status(500).send('Internal Server Error');
     }
-};
+}
 
-/* --- FORMULARIO DE PROYECTOS --- */
-
-export const showNewProjectForm = async (req, res) => {
+export async function showNewProjectForm(req, res) {
     try {
-        const organizations = await getAllOrganizations();
-        res.render('new-project', { 
+        const organizations = await organizationModel.getAllOrganizations();
+        res.render('add-project', { 
             title: 'Add New Service Project', 
-            organizations 
+            organizations,
+            errors: null 
         });
     } catch (error) {
-        console.error('Error loading form:', error);
-        res.status(500).send("Error loading organizations for the form");
+        console.error('Error in showNewProjectForm:', error);
+        res.status(500).send('Internal Server Error');
     }
-};
+}
 
-/* --- VALIDACIONES (EXPORTADAS PARA ROUTES.JS) --- */
-
-export const projectValidation = [
-    body('title')
-        .trim()
-        .notEmpty().withMessage('Title is required')
-        .isLength({ min: 3, max: 200 }).withMessage('Title must be between 3 and 200 characters'),
-    body('description')
-        .trim()
-        .notEmpty().withMessage('Description is required')
-        .isLength({ max: 1000 }).withMessage('Description must be less than 1000 characters'),
-    body('location')
-        .trim()
-        .notEmpty().withMessage('Location is required')
-        .isLength({ max: 200 }).withMessage('Location must be less than 200 characters'),
-    body('date')
-        .notEmpty().withMessage('Date is required')
-        .isISO8601().withMessage('Date must be a valid date format'),
-    body('organizationId')
-        .notEmpty().withMessage('Organization is required')
-        .isInt().withMessage('Organization must be a valid integer')
-];
-
-/* --- PROCESAMIENTO CON VALIDACIÓN Y FLASH --- */
-
-export const processNewProjectForm = async (req, res) => {
-    const errors = validationResult(req);
-    
-    if (!errors.isEmpty()) {
-        errors.array().forEach((error) => {
-            req.flash('error', error.msg);
-        });
-        return req.session.save(() => res.redirect('/new-project'));
-    }
-
-    const { title, description, location, date, organizationId } = req.body;
-
+export async function processNewProjectForm(req, res) {
     try {
-        const newProjectId = await projectModel.createProject(title, description, location, date, organizationId);
+        const errors = validationResult(req);
+        const { title, description, location, date, organizationId } = req.body;
 
-        req.flash('success', 'New service project created successfully!');
-        req.session.save(() => res.redirect(`/project/${newProjectId}`));
+        if (!errors.isEmpty()) {
+            const organizations = await organizationModel.getAllOrganizations();
+            return res.render('add-project', {
+                title: 'Add New Service Project',
+                organizations,
+                errors: errors.array(),
+                project: req.body
+            });
+        }
+
+        await projectModel.createProject(title, description, location, date, organizationId);
+        res.redirect('/projects');
     } catch (error) {
-        console.error('Error creating new project:', error);
-        req.flash('error', 'There was an error creating the service project.');
-        req.session.save(() => res.redirect('/new-project'));
+        console.error('Error in processNewProjectForm:', error);
+        res.status(500).send('Error al crear el proyecto');
     }
-};
+}
