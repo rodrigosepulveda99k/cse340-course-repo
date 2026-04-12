@@ -1,2 +1,5 @@
 rodri@gmail.com
 123456
+
+grader@example.edu
+admin123

@@ -1,8 +1,8 @@
 /* --- Variables de Diseño y Accesibilidad --- */
 :root {
-    --primary-color: #0f172a;    /* Navy oscuro para contraste profesional */
-    --secondary-color: #2563eb;  /* Azul de acción (cumple con contraste WCAG) */
-    --bg-color: #f1f5f9;         /* Fondo gris muy claro para descanso visual */
+    --primary-color: #0f172a;
+    --secondary-color: #2563eb;
+    --bg-color: #f1f5f9;
     --card-bg: #ffffff;
     --text-main: #0f172a;
     --text-muted: #475569;
@@ -17,38 +17,54 @@ body {
     line-height: 1.6;
 }
 
-/* --- Criterio 5: Navegación Legible y Profesional (CORREGIDO) --- */
+/* --- Navegación Legible (Corregido para evitar conflicto con tarjetas) --- */
 header {
     background: var(--primary-color);
-    padding: 1.5rem 0;
+    padding: 1rem 0;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
+/* Solo afecta a la lista del menú */
 nav ul {
     display: flex;
     justify-content: center;
-    gap: 1.5rem;
+    align-items: center;
+    gap: 1rem;
     list-style: none;
     padding: 0;
     margin: 0;
+    flex-wrap: wrap;
+}
+
+/* Reseteo de estilos de tarjeta para los items del menú */
+nav ul li {
+    background: transparent !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    display: block !important;
 }
 
 nav a {
-    background-color: #ffffff;    /* Botón blanco */
-    color: #0f172a !important;   /* TEXTO OSCURO para máximo contraste */
+    color: #ffffff !important; /* Texto blanco para contraste con navy */
     text-decoration: none;
-    font-weight: 700;
-    font-size: 1rem;
-    padding: 0.7rem 1.2rem;
-    border-radius: 8px;           /* Bordes redondeados como en tus fotos */
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 0.6rem 1rem;
+    border-radius: 6px;
     transition: all 0.3s ease;
-    display: inline-block;
 }
 
 nav a:hover {
-    background-color: #93c5fd;    /* Azul claro al pasar el mouse */
-    color: #0f172a !important;
-    transform: translateY(-2px);
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+}
+
+/* Links destacados (Admin) */
+.admin-link {
+    color: #fbbf24 !important; /* Dorado para destacar */
+    border: 1px solid #fbbf24;
 }
 
 /* --- Estructura Principal --- */
@@ -56,7 +72,7 @@ main {
     max-width: 1100px;
     margin: 3rem auto;
     padding: 0 1.5rem;
-    min-height: 70vh; /* Asegura que el contenido empuje al footer hacia abajo */
+    min-height: 70vh;
 }
 
 h1, h2 {
@@ -64,24 +80,8 @@ h1, h2 {
     color: var(--primary-color);
 }
 
-/* --- Criterio 3: Manejo de Imágenes --- */
-img {
-    max-width: 100%;
-    height: auto;
-    display: block;
-    margin: 1rem auto;
-    border-radius: 8px;
-}
-
-/* Específico para logos de organizaciones en la lista */
-li img {
-    max-height: 120px;
-    object-fit: contain;
-    margin-bottom: 1.5rem;
-}
-
-/* --- Criterio 2: Listado de Organizaciones como Tarjetas --- */
-ul {
+/* --- Listado de Organizaciones/Proyectos (Solo dentro de MAIN) --- */
+main ul {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 2rem;
@@ -90,7 +90,7 @@ ul {
     margin-top: 2rem;
 }
 
-li {
+main ul li {
     background: var(--card-bg);
     padding: 2.5rem;
     border-radius: 12px;
@@ -103,77 +103,30 @@ li {
     text-align: center;
 }
 
-li:hover {
+main ul li:hover {
     transform: translateY(-5px);
 }
 
-li strong {
-    font-size: 1.25rem;
+/* --- Manejo de Imágenes --- */
+img {
+    max-width: 100%;
+    height: auto;
     display: block;
-    margin-bottom: 0.5rem;
+    margin: 1rem auto;
+    border-radius: 8px;
 }
 
-/* --- Criterio 2: Footer al final de la página --- */
-footer {
-    text-align: center;
-    padding: 3rem 0;
-    background: #ffffff;
-    color: var(--text-muted);
-    border-top: 1px solid #e2e8f0;
-    margin-top: 4rem;
-    clear: both;
+/* --- Badge y Otros --- */
+.badge {
+    background: #fbbf24;
+    color: #000;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.75rem;
 }
 
-/* --- Diseño Responsivo --- */
-@media (max-width: 640px) {
-    nav ul {
-        flex-direction: column;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    
-    h1 {
-        font-size: 1.75rem;
-    }
-}
-
-/* --- Estilos Adicionales para Projects --- */
-.intro-text {
-    text-align: center;
-    max-width: 800px;
-    margin: 0 auto 2rem;
-    color: var(--text-muted);
-    font-size: 1.1rem;
-}
-
-.project-info {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    justify-content: space-between;
-}
-
-.status-tag {
-    display: inline-block;
-    margin-top: 1.5rem;
-    padding: 0.4rem 1rem;
-    background-color: var(--secondary-color);
-    color: #ffffff;
-    border-radius: 50px;
-    font-size: 0.85rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-li p {
-    color: var(--text-muted);
-    margin: 0.5rem 0;
-}
-
-/* forms */
-
-/* Contenedor principal */
+/* --- Formularios --- */
 .form-card {
     background: white;
     padding: 2rem;
@@ -183,71 +136,45 @@ li p {
     margin: 2rem auto;
 }
 
-/* Grupos de inputs */
 .form-group {
     margin-bottom: 1.5rem;
     display: flex;
     flex-direction: column;
 }
 
-.form-group label {
-    font-weight: bold;
-    margin-bottom: 0.5rem;
-    color: #333;
-}
-
-/* Inputs y Textarea */
-.form-group input, 
-.form-group textarea {
+.form-group input, .form-group textarea {
     padding: 0.8rem;
-    border: 1px solid #ccc;
+    border: 1px solid #cbd5e1;
     border-radius: 4px;
-    font-size: 1rem;
 }
 
-.form-group textarea {
-    resize: vertical;
-    min-height: 100px;
-}
-
-/* Botón */
 .btn-submit {
-    background-color: #002d5a; /* El azul oscuro de tu header */
+    background-color: var(--secondary-color);
     color: white;
     padding: 1rem;
     border: none;
     border-radius: 4px;
-    font-size: 1rem;
     font-weight: bold;
     cursor: pointer;
-    transition: background 0.3s;
     width: 100%;
 }
 
-.btn-submit:hover {
-    background-color: #004a94;
-}
-
-/* Flash message styles (CORREGIDO) */
+/* --- Mensajes de Alerta --- */
 .alert {
     padding: 15px;
     margin: 20px auto;
     max-width: 800px;
-    border: 1px solid transparent;
     border-radius: 4px;
     text-align: center;
     font-weight: bold;
 }
+.alert.success { color: #155724; background-color: #d4edda; border: 1px solid #c3e6cb; }
+.alert.error { color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; }
 
-/* Nota el cambio: .alert.success en lugar de .alert-success */
-.alert.success {
-    color: #155724;
-    background-color: #d4edda;
-    border-color: #c3e6cb;
-}
-
-.alert.error {
-    color: #721c24;
-    background-color: #f8d7da;
-    border-color: #f5c6cb;
+footer {
+    text-align: center;
+    padding: 3rem 0;
+    color: var(--text-muted);
+    border-top: 1px solid #e2e8f0;
+    margin-top: 4rem;
 }

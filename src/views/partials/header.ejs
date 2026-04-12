@@ -1,42 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= title %> | CSE 340 Service Network</title>
     <link rel="stylesheet" href="/css/main.css">
 </head>
+
 <body>
     <header>
-        <nav>
-            <ul>
-                <li><a href="/">Home</a></li>
-                <li><a href="/organizations">Organizations</a></li>
-                <li><a href="/projects">Projects</a></li>
-                <li><a href="/categories">Categories</a></li>
+        <div class="nav-container"> <nav>
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/organizations">Organizations</a></li>
+                    <li><a href="/projects">Projects</a></li>
+                    <li><a href="/categories">Categories</a></li>
 
-                <% if (isLoggedIn) { %>
-                    <li><a href="/logout">Logout</a></li>
-                    <li class="user-display">
-                        <span>Welcome, <strong><%= user.name %></strong></span>
-                    </li>
-                <% } else { %>
-                    <li><a href="/register">Register</a></li>
-                    <li><a href="/login">Login</a></li>
-                <% } %>
-            </ul>
-        </nav>
+                    <% if (isLoggedIn) { %>
+                        <% if (user && user.role_name === 'Admin') { %>
+                            <li><a href="/new-project" class="admin-link">+ New Project</a></li>
+                            <li><a href="/new-organization" class="admin-link">+ New Org</a></li>
+                        <% } %>
+
+                        <li><a href="/logout">Logout</a></li>
+                        
+                        <li class="user-display">
+                            <span>Welcome, <strong><%= user.name %></strong></span>
+                            <% if (user.role_name === 'Admin') { %>
+                                <span class="badge">Admin</span>
+                            <% } %>
+                        </li>
+                    <% } else { %>
+                        <li><a href="/register">Register</a></li>
+                        <li><a href="/login">Login</a></li>
+                    <% } %>
+                </ul>
+            </nav>
+        </div>
 
         <section class="messages">
             <% 
-                // Usamos la función del middleware para obtener y limpiar mensajes
                 const allMessages = typeof getMessages === 'function' ? getMessages() : (locals.messages || {}); 
+                const types = Object.keys(allMessages);
             %>
-            
-            <% Object.keys(allMessages).forEach(type => { %>
+
+            <% types.forEach(type => { %>
                 <% if (Array.isArray(allMessages[type]) && allMessages[type].length > 0) { %>
-                    <div class="alert alert-<%= type %>">
-                        <% allMessages[type].forEach(msg => { %>
+                    <div class="alert <%= type %>"> <% allMessages[type].forEach(msg => { %>
                             <p><%= msg %></p>
                         <% }); %>
                     </div>

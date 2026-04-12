@@ -20,46 +20,51 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 2. CONFIGURACIÓN DE SESIÓN
+// 2. CONFIGURACIÓN DE SESIÓN (CORREGIDA)
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'your-secret-key', // Tip: usa dotenv para el secret
+    secret: process.env.SESSION_SECRET || 'your-secret-key',
     resave: false,
-    saveUninitialized: true,
-    cookie: { maxAge: 60 * 60 * 1000 } // 1 hora
+    saveUninitialized: false, // Cambiado a false para mejor gestión de memoria
+    cookie: { 
+        maxAge: 60 * 60 * 1000, // 1 hora
+        secure: false,          // IMPORTANTE: Ponelo en false para que funcione en Render sin líos de SSL
+        httpOnly: true          // Protege contra ataques XSS
+    }
 }));
 
-// 3. CONFIGURACIÓN DE FLASH (Debe ir después de session)
+// 3. CONFIGURACIÓN DE FLASH
 app.use(flash);
 
 // 4. CONFIGURACIÓN DE VISTAS
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'src/views'));
 
-// 5. MIDDLEWARE DE LOGS Y VARIABLES LOCALES (UNIFICADO)
+// 5. MIDDLEWARE DE VARIABLES LOCALES
 app.use((req, res, next) => {
-    // --- VARIABLES PARA LAS VISTAS ---
+    // Definimos isLoggedIn y user de forma robusta
     res.locals.isLoggedIn = !!(req.session && req.session.user);
     res.locals.user = req.session.user || null;
 
-    // --- CONSUMIR MENSAJES FLASH ---
-    // Si usas express-flash (la librería estándar):
-    // res.locals.messages = req.flash(); 
-
-    // Si es tu middleware personalizado, asegúrate de que esto los limpie:
+    // Manejo de mensajes flash
     if (req.session.flash) {
         res.locals.messages = req.session.flash;
-        delete req.session.flash; // ESTA LÍNEA ES LA QUE EVITA QUE SE ACUMULEN
+        delete req.session.flash;
     } else {
         res.locals.messages = {};
     }
 
+    // Función auxiliar para el header.ejs (por si el header la llama)
+    res.locals.getMessages = () => {
+        const msgs = res.locals.messages;
+        res.locals.messages = {}; // Limpia después de leer
+        return msgs;
+    };
+
     res.locals.NODE_ENV = nodeEnv;
-    res.locals.nodeEnv = nodeEnv;
-    
     next();
 });
 
-// 6. RUTAS (Siempre después de session, flash y locals)
+// 6. RUTAS
 app.use(routes);
 
 // 7. INICIO DEL SERVIDOR
@@ -67,7 +72,6 @@ app.listen(port, async () => {
     try {
         await testConnection();
         console.log(`Server is running at http://127.0.0.1:${port}`);
-        console.log(`Environment: ${nodeEnv}`);
     } catch (error) {
         console.error('Error connecting to the database on startup:', error.message);
     }

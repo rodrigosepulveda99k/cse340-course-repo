@@ -1,27 +1,32 @@
 import { pool as db } from './db.js';
 import bcrypt from 'bcrypt';
-import * as volunteerModel from '../models/volunteers.js';
 
 /**
- * Inserta un nuevo usuario usando los nombres de columna reales detectados en la DB.
+ * Inserta un nuevo usuario.
+ * @param {string} name - Nombre del usuario.
+ * @param {string} email - Email (único).
+ * @param {string} passwordHash - Contraseña ya encriptada.
+ * @param {string} account_lastname - Apellido (evita el NOT NULL error).
  */
-export const createUser = async (name, email, passwordHash, lastname = 'Not Provided') => {
+export const createUser = async (name, email, passwordHash, account_lastname = 'None') => {
     const default_role = 'Client'; 
     const query = `
         INSERT INTO users (name, email, account_lastname, password_hash, role_name) 
         VALUES ($1, $2, $3, $4, $5) 
         RETURNING account_id
     `;
-    // Mapeo: $1:name, $2:email, $3:lastname, $4:passwordHash, $5:default_role
-    const query_params = [name, email, lastname, passwordHash, default_role];
+    const query_params = [name, email, account_lastname, passwordHash, default_role];
     
-    const result = await db.query(query, query_params);
-
-    if (result.rows.length === 0) {
-        throw new Error('Failed to create user');
+    try {
+        const result = await db.query(query, query_params);
+        if (result.rows.length === 0) {
+            throw new Error('Failed to create user: No rows returned');
+        }
+        return result.rows[0].account_id;
+    } catch (error) {
+        console.error("DATABASE ERROR in createUser:", error.message);
+        throw error; // Re-lanzamos para que el controlador lo atrape
     }
-
-    return result.rows[0].account_id;
 };
 
 /**
@@ -33,41 +38,37 @@ export const findUserByEmail = async (email) => {
         FROM users 
         WHERE email = $1
     `;
-    const result = await db.query(query, [email]);
-
-    if (result.rows.length === 0) {
-        return null;
+    try {
+        const result = await db.query(query, [email]);
+        return result.rows.length === 0 ? null : result.rows[0];
+    } catch (error) {
+        console.error("DATABASE ERROR in findUserByEmail:", error.message);
+        throw error;
     }
-    
-    return result.rows[0];
-};
-
-/**
- * Compara la contraseña usando password_hash de la DB.
- */
-const verifyPassword = async (password, passwordHash) => {
-    return await bcrypt.compare(password, passwordHash);
 };
 
 /**
  * Autentica al usuario y devuelve el objeto para la sesión (sin el hash).
  */
 export const authenticateUser = async (email, password) => {
-    const user = await findUserByEmail(email);
+    try {
+        const user = await findUserByEmail(email);
 
-    if (!user) {
+        if (!user) return null;
+
+        // Compara la contraseña ingresada con el hash de la DB
+        const isPasswordCorrect = await bcrypt.compare(password, user.password_hash);
+
+        if (isPasswordCorrect) {
+            // Extraemos password_hash para que no viaje en la sesión por seguridad
+            const { password_hash, ...userWithoutHash } = user;
+            return userWithoutHash;
+        }
         return null;
+    } catch (error) {
+        console.error("AUTHENTICATION ERROR:", error.message);
+        throw error;
     }
-
-    const isPasswordCorrect = await verifyPassword(password, user.password_hash);
-
-    if (isPasswordCorrect) {
-        // Extraemos password_hash por seguridad para no guardarlo en la cookie de sesión
-        const { password_hash, ...userWithoutHash } = user;
-        return userWithoutHash;
-    }
-
-    return null;
 };
 
 /**
@@ -79,23 +80,11 @@ export const getAllUsers = async () => {
         FROM users 
         ORDER BY name ASC
     `;
-    const result = await db.query(query);
-    return result.rows;
-};
-
-export async function showDashboard(req, res) {
     try {
-        const userId = req.session.user.account_id;
-        // Obtenemos la lista de proyectos del modelo de voluntarios
-        const volunteerProjects = await volunteerModel.getProjectsByUser(userId);
-
-        res.render('user/dashboard', { // Ajusta la ruta si tu dashboard está en otra carpeta
-            title: 'Dashboard',
-            user: req.session.user,
-            volunteerProjects // Pasamos los proyectos a la vista
-        });
+        const result = await db.query(query);
+        return result.rows;
     } catch (error) {
-        console.error("Error en dashboard:", error);
-        res.status(500).send("Error al cargar el dashboard");
+        console.error("DATABASE ERROR in getAllUsers:", error.message);
+        throw error;
     }
-}
+};
