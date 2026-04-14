@@ -18,19 +18,23 @@
             <div class="volunteer-actions" style="margin-top: 20px; padding: 15px; background: #f4f4f4; border-radius: 8px; border: 1px solid #ddd;">
                 <% if (isVolunteering) { %>
                     <p style="color: #2e7d32;"><strong>✅ You are volunteering for this project!</strong></p>
-                    <a href="/volunteer/remove/<%= project.project_id %>" class="btn-delete" style="color: #d32f2f; text-decoration: underline;">
-                        Remove me as Volunteer
-                    </a>
+                    <form method="POST" action="/volunteer/remove/<%= project.project_id %>" style="display:inline;">
+                        <button type="submit" class="btn-delete" style="color: #d32f2f; background: none; border: none; cursor: pointer; text-decoration: underline; padding: 0;">
+                            Remove me as Volunteer
+                        </button>
+                    </form>
                 <% } else { %>
                     <p>Help this cause:</p>
-                    <a href="/volunteer/add/<%= project.project_id %>" class="btn-primary" style="background: #007bff; color: white; padding: 10px 15px; border-radius: 5px; text-decoration: none; display: inline-block;">
-                        Volunteer for this project
-                    </a>
+                    <form method="POST" action="/volunteer/add/<%= project.project_id %>">
+                        <button type="submit" class="btn-primary" style="background: #007bff; color: white; padding: 10px 15px; border-radius: 5px; border: none; cursor: pointer;">
+                            Volunteer for this project
+                        </button>
+                    </form>
                 <% } %>
             </div>
         <% } else { %>
             <div style="margin-top: 20px; padding: 10px; border: 1px dashed #ccc;">
-                <p>Please <a href="/account/login">login</a> to join this project as a volunteer.</p>
+                <p>Please <a href="/login">login</a> to join this project as a volunteer.</p>
             </div>
         <% } %>
         
@@ -50,11 +54,13 @@
                 </ul>
             <% } %>
             
+            <% if (isLoggedIn && user && user.role_name === 'Admin') { %>
             <p class="action-link">
                 <a href="/assign-categories/<%= project.project_id %>" class="btn-edit">
                     <%= (locals.categories && categories.length > 0) ? 'Edit Categories' : 'Add Categories to Project' %>
                 </a>
             </p>
+            <% } %>
         </div>
     </section>
 </main>

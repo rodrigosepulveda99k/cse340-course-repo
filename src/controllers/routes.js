@@ -6,6 +6,7 @@ import { handleAddVolunteer, handleRemoveVolunteer } from './volunteers.js';
 import { 
     showUserRegistrationForm, 
     processUserRegistrationForm,
+    registrationValidation,
     showLoginForm,
     processLoginForm,
     processLogout,
@@ -45,11 +46,14 @@ router.get('/login', showLoginForm);
 router.post('/login', processLoginForm);
 router.get('/logout', processLogout);
 router.get('/register', showUserRegistrationForm);
-router.post('/register', processUserRegistrationForm);
+router.post('/register', registrationValidation, processUserRegistrationForm);
 
 // 3. DASHBOARD Y USUARIOS
 router.get('/dashboard', requireLogin, showDashboard);
 router.get('/users', requireLogin, requireAdmin, showUserList);
+
+// 4. ABOUT
+router.get('/about', (req, res) => res.render('about', { title: 'About' }));
 
 // 4. RUTAS DE PROYECTOS (Orden Crítico: lo estático va ANTES que lo dinámico :id)
 router.get('/projects', showProjectsPage);
@@ -66,8 +70,8 @@ router.post('/edit-organization/:id', requireLogin, requireAdmin, organizationVa
 router.get('/organization/:id', showOrganizationDetailsPage);
 
 // 6. VOLUNTARIADO
-router.get('/volunteer/add/:projectId', requireLogin, handleAddVolunteer);
-router.get('/volunteer/remove/:projectId', requireLogin, handleRemoveVolunteer);
+router.post('/volunteer/add/:projectId', requireLogin, handleAddVolunteer);
+router.post('/volunteer/remove/:projectId', requireLogin, handleRemoveVolunteer);
 
 // 7. CATEGORÍAS
 router.get('/categories', showCategoriesPage);

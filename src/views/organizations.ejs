@@ -16,13 +16,17 @@
                         </a>
                     </strong>
                     <p><%= organization.contact_email %></p>
-                    <p><a href="/edit-organization/<%= organization.organization_id %>" class="edit-link">Edit</a></p>
+                    <% if (isLoggedIn && user && user.role_name === 'Admin') { %>
+                        <p><a href="/edit-organization/<%= organization.organization_id %>" class="edit-link">Edit</a></p>
+                    <% } %>
                 </div>
             </li>
         <% }); %>
     </ul>
 
-    <p><a href="/new-organization" class="button-link">Add a new organization</a></p>
+    <% if (isLoggedIn && user && user.role_name === 'Admin') { %>
+        <p><a href="/new-organization" class="button-link">Add a new organization</a></p>
+    <% } %>
 </main>
 
 <%- include('partials/footer') %>

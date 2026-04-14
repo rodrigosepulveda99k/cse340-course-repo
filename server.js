@@ -15,20 +15,26 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+// Trust reverse proxy (e.g. Render) so secure cookies work behind HTTPS termination
+app.set('trust proxy', 1);
+
 // 1. MIDDLEWARES ESTÁTICOS Y DE PARSEO
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 2. CONFIGURACIÓN DE SESIÓN (CORREGIDA)
+// 2. CONFIGURACIÓN DE SESIÓN
+if (!process.env.SESSION_SECRET) {
+    throw new Error('SESSION_SECRET environment variable is required');
+}
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'your-secret-key',
+    secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: false, // Cambiado a false para mejor gestión de memoria
+    saveUninitialized: false,
     cookie: { 
-        maxAge: 60 * 60 * 1000, // 1 hora
-        secure: false,          // IMPORTANTE: Ponelo en false para que funcione en Render sin líos de SSL
-        httpOnly: true          // Protege contra ataques XSS
+        maxAge: 60 * 60 * 1000,
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: true
     }
 }));
 
@@ -41,25 +47,8 @@ app.set('views', path.join(__dirname, 'src/views'));
 
 // 5. MIDDLEWARE DE VARIABLES LOCALES
 app.use((req, res, next) => {
-    // Definimos isLoggedIn y user de forma robusta
     res.locals.isLoggedIn = !!(req.session && req.session.user);
     res.locals.user = req.session.user || null;
-
-    // Manejo de mensajes flash
-    if (req.session.flash) {
-        res.locals.messages = req.session.flash;
-        delete req.session.flash;
-    } else {
-        res.locals.messages = {};
-    }
-
-    // Función auxiliar para el header.ejs (por si el header la llama)
-    res.locals.getMessages = () => {
-        const msgs = res.locals.messages;
-        res.locals.messages = {}; // Limpia después de leer
-        return msgs;
-    };
-
     res.locals.NODE_ENV = nodeEnv;
     next();
 });

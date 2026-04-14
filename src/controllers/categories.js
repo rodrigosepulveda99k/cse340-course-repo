@@ -22,7 +22,8 @@ export const showCategoriesPage = async (req, res) => {
 
 export const showCategoryDetailsPage = async (req, res) => {
     try {
-        const id = req.params.id;
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) return res.status(400).send('Invalid category ID');
         const category = await catModel.getCategoryById(id);
         const projects = await projModel.getProjectsByCategory(id);
 
@@ -60,7 +61,8 @@ export const createNewCategory = async (req, res) => {
 };
 
 export const showEditCategoryForm = async (req, res) => {
-    const id = req.params.id;
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).send('Invalid category ID');
     try {
         const category = await catModel.getCategoryById(id);
         if (!category) return res.status(404).send('Category not found');
@@ -73,7 +75,8 @@ export const showEditCategoryForm = async (req, res) => {
 
 export const updateCategory = async (req, res) => {
     const errors = validationResult(req);
-    const id = req.params.id;
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).send('Invalid category ID');
 
     if (!errors.isEmpty()) {
         const category = await catModel.getCategoryById(id);
@@ -92,7 +95,8 @@ export const updateCategory = async (req, res) => {
 
 export const showAssignCategoriesForm = async (req, res) => {
     try {
-        const projectId = req.params.projectId;
+        const projectId = parseInt(req.params.projectId);
+        if (isNaN(projectId)) return res.status(400).send('Invalid project ID');
 
         // Recuperamos los datos usando tus modelos importados
         const projectDetails = await projModel.getProjectDetails(projectId);
@@ -118,7 +122,8 @@ export const showAssignCategoriesForm = async (req, res) => {
 
 export const processAssignCategoriesForm = async (req, res) => {
     try {
-        const projectId = req.params.projectId;
+        const projectId = parseInt(req.params.projectId);
+        if (isNaN(projectId)) return res.status(400).send('Invalid project ID');
         
         // El formulario enviará 'categoryIds'. Si no hay ninguno, usamos []
         const selectedCategoryIds = req.body.categoryIds || [];
@@ -139,6 +144,6 @@ export const processAssignCategoriesForm = async (req, res) => {
     } catch (error) {
         console.error('Error in processAssignCategoriesForm:', error);
         req.flash('error', 'There was an error updating categories.');
-        res.redirect(`/project/${projectId}`);
+        req.session.save(() => res.redirect(`/project/${req.params.projectId}`));
     }
 };

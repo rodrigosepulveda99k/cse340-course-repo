@@ -13,15 +13,17 @@ import {
     processAssignCategoriesForm 
 } from '../controllers/categories.js';
 
+import { requireLogin, requireAdmin } from '../controllers/users.js';
+
 import * as orgController from '../controllers/organizations.js';
 
 router.get('/category/:id', showCategoryDetailsPage);
-router.get('/new-category', showNewCategoryForm);
-router.post('/new-category', validateCategory, createNewCategory);
-router.get('/edit-category/:id', showEditCategoryForm);
-router.post('/edit-category/:id', validateCategory, updateCategory);
-router.get('/assign-categories/:projectId', showAssignCategoriesForm);
-router.post('/assign-categories/:projectId', processAssignCategoriesForm);
+router.get('/new-category', requireLogin, requireAdmin, showNewCategoryForm);
+router.post('/new-category', requireLogin, requireAdmin, validateCategory, createNewCategory);
+router.get('/edit-category/:id', requireLogin, requireAdmin, showEditCategoryForm);
+router.post('/edit-category/:id', requireLogin, requireAdmin, validateCategory, updateCategory);
+router.get('/assign-categories/:projectId', requireLogin, requireAdmin, showAssignCategoriesForm);
+router.post('/assign-categories/:projectId', requireLogin, requireAdmin, processAssignCategoriesForm);
 
 
 // --- NUEVO: Rutas de Organizaciones ---

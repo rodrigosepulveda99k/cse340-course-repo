@@ -6,9 +6,11 @@
     <section class="category-grid">
         <p class="intro-text">Browse our projects by category:</p>
 
+        <% if (isLoggedIn && user && user.role_name === 'Admin') { %>
         <div class="actions-bar" style="margin-bottom: 20px;">
             <a href="/new-category" class="btn-primary">Add New Category</a>
         </div>
+        <% } %>
         
         <ul class="category-list">
             <% if (categories && categories.length > 0) { %>

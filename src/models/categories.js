@@ -61,13 +61,12 @@ export const getProjectsByCategory = async (categoryId) => {
     }
 };
 // Esta queda interna (sin export)
-const assignCategoryToProject = async (categoryId, projectId) => {
+const assignCategoryToProject = async (client, categoryId, projectId) => {
     const query = `
         INSERT INTO project_category (category_id, project_id)
         VALUES ($1, $2);
     `;
-    // Usamos 'pool' que es como lo tenés definido arriba
-    await pool.query(query, [categoryId, projectId]);
+    await client.query(query, [categoryId, projectId]);
 };
 
 // Esta se exporta para el controlador
@@ -76,21 +75,18 @@ export const updateCategoryAssignments = async (projectId, categoryIds) => {
         DELETE FROM project_category
         WHERE project_id = $1;
     `;
-    await pool.query(deleteQuery, [projectId]);
-
-    for (const categoryId of categoryIds) {
-        await assignCategoryToProject(categoryId, projectId);
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        await client.query(deleteQuery, [projectId]);
+        for (const categoryId of categoryIds) {
+            await assignCategoryToProject(client, categoryId, projectId);
+        }
+        await client.query('COMMIT');
+    } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+    } finally {
+        client.release();
     }
 };
-
-export const processNewOrganizationForm = async (req, res) => {
-    // Si el campo viene vacío del form, le asignamos el default aquí
-    const { name, description, contactEmail } = req.body;
-    const logoFilename = req.body.logoFilename || 'placeholder-logo.png'; 
-
-    try {
-        // ... resto del código para insertar en la DB
-    } catch (error) {
-        // ...
-    }
-}

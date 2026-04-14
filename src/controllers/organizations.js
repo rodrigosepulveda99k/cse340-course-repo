@@ -18,7 +18,8 @@ export const showOrganizationsPage = async (req, res) => {
 
 export const showOrganizationDetailsPage = async (req, res) => {
     try {
-        const id = req.params.id;
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) return res.status(400).send('Invalid organization ID');
         const organization = await orgModel.getOrganizationById(id);
 
         if (!organization) {
@@ -42,7 +43,8 @@ export const showNewOrganizationForm = (req, res) => {
 
 export const showEditOrganizationForm = async (req, res) => {
     try {
-        const organizationId = req.params.id;
+        const organizationId = parseInt(req.params.id);
+        if (isNaN(organizationId)) return res.status(400).send('Invalid organization ID');
         const organizationDetails = await orgModel.getOrganizationById(organizationId);
 
         if (!organizationDetails) {
@@ -85,7 +87,8 @@ export const processNewOrganizationForm = async (req, res) => {
 };
 
 export const processEditOrganizationForm = async (req, res) => {
-    const organizationId = req.params.id;
+    const organizationId = parseInt(req.params.id);
+    if (isNaN(organizationId)) return res.status(400).send('Invalid organization ID');
     const results = validationResult(req);
     
     if (!results.isEmpty()) {
