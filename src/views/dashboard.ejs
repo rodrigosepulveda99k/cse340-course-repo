@@ -21,6 +21,28 @@
     <% } %>
 
     <hr>
+    <section class="volunteered-projects">
+        <h3>Projects You've Signed Up For</h3>
+        <% if (signedUpProjects && signedUpProjects.length > 0) { %>
+            <ul class="project-list">
+                <% signedUpProjects.forEach(project => { %>
+                    <li>
+                        <a href="/project/<%= project.project_id %>"><%= project.title %></a>
+                        <% if (project.date) { %>
+                            &mdash; <span><%= new Date(project.date).toLocaleDateString() %></span>
+                        <% } %>
+                        <% if (project.location) { %>
+                            &mdash; <span><%= project.location %></span>
+                        <% } %>
+                    </li>
+                <% }) %>
+            </ul>
+        <% } else { %>
+            <p>You have not signed up for any projects yet. <a href="/projects">Browse projects</a> to get started!</p>
+        <% } %>
+    </section>
+
+    <hr>
     <div class="actions">
         <p>Finished for now?</p>
         <a href="/logout" class="btn btn-danger">Log Out</a>

@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt';
 import { createUser, authenticateUser, getAllUsers } from '../models/users.js';
+import { getProjectsByUser } from '../models/volunteers.js';
 import { body, validationResult } from 'express-validator';
 
 /* --- MIDDLEWARES --- */
@@ -96,15 +97,29 @@ export const processLoginForm = async (req, res) => {
 
 /* --- DASHBOARD --- */
 
-export const showDashboard = (req, res) => {
+export const showDashboard = async (req, res) => {
     const user = req.session.user;
-    res.render('dashboard', {
-        title: 'User Dashboard',
-        user: user,
-        isLoggedIn: true,
-        name: user ? user.name : 'Guest',
-        email: user ? user.email : ''
-    });
+    try {
+        const signedUpProjects = await getProjectsByUser(user.account_id);
+        res.render('dashboard', {
+            title: 'User Dashboard',
+            user: user,
+            isLoggedIn: true,
+            name: user ? user.name : 'Guest',
+            email: user ? user.email : '',
+            signedUpProjects
+        });
+    } catch (error) {
+        console.error('Error fetching volunteered projects:', error);
+        res.render('dashboard', {
+            title: 'User Dashboard',
+            user: user,
+            isLoggedIn: true,
+            name: user ? user.name : 'Guest',
+            email: user ? user.email : '',
+            signedUpProjects: []
+        });
+    }
 };
 
 /* --- LISTADO DE USUARIOS (Admin Only) --- */
