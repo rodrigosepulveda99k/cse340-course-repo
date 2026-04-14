@@ -24,7 +24,8 @@ export async function handleRemoveVolunteer(req, res) {
 
         await volunteerModel.removeVolunteer(projectId, userId);
 
-        res.redirect(`/project/${projectId}`);
+        const redirectTo = req.body.redirectTo || `/project/${projectId}`;
+        res.redirect(redirectTo);
     } catch (error) {
         console.error('Error removing volunteer:', error);
         res.status(500).send('Error removing volunteer registration');

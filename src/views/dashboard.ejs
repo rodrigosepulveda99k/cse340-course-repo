@@ -34,6 +34,10 @@
                         <% if (project.location) { %>
                             &mdash; <span><%= project.location %></span>
                         <% } %>
+                        <form action="/volunteer/remove/<%= project.project_id %>" method="POST" style="display:inline;">
+                            <input type="hidden" name="redirectTo" value="/dashboard">
+                            <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                        </form>
                     </li>
                 <% }) %>
             </ul>
